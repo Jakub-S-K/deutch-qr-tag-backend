@@ -121,6 +121,9 @@ router.post('/answer', (req, res) => {
             if (answer) {
                 res.json({ok: false})
             } else {
+                if (answer === 'd') {
+                    res.json({ok: false})
+                }
                 let answer = new Answers({
                     hash: req.body.hash,
                     qr_id: req.body.qr_id,
