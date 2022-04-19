@@ -104,12 +104,12 @@ router.post('/question', (req, res) => {
             if (question){
                 res.json(question);
             } else {
-                res.json({ok: false})
+                res.json({ok: false});
             }
         })
     } else {
         res.status(404);
-        res.send("Error")
+        res.json({ok: false});
     }
 });
 
