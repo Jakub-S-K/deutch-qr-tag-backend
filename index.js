@@ -128,6 +128,57 @@ router.post('/answer', (req, res) => {
                 })
                 answer.save((err, doc) => {
                     if (!err) {
+                        
+                        Answers.aggregate([
+                            {
+                                $match: {
+                                    hash: req.body.hash
+                                },
+                                $lookup:
+                                {
+                                    from: "questions",
+                                    localField: "qr_id",
+                                    foreignField: "qr_id",
+                                    as: "eval"
+                                }
+                            },
+                            {
+                                $project:
+                                {
+                                    hash: 1,
+                                    qr_id: 1,
+                                    answer_correct: "$eval.answer",
+                                    answer: 1
+                                }
+                            },
+                            {
+                                $match: { $expr: {
+                                     $in: ["$answer", "$answer_correct"]
+                                    }
+                                }
+                            },
+                            {
+                                $group:
+                                {
+                                    _id: "$hash",
+                                    count: {$sum: 1}
+                                }
+                             },
+                             {
+                                 $sort:
+                                    {
+                                        count: -1
+                                    }
+                             }
+                            
+                        ], (err, result) =>{
+                            if (err) {
+                                res.json({ok: false});
+                            } else {
+                                res.json(result);
+                            }
+                        })
+
                         res.json({ok: true})
                     } else {
                         res.json({ok: false})
