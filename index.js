@@ -242,7 +242,7 @@ router.post('/points', (req, res) => {
          
         ], (err, result) =>{
             if (err) {
-                res.json({ok: false});
+                res.json({ok: false, err: true});
             } else {
                 if (!result[0]) {
                     res.json({ok: false, answered: true})
