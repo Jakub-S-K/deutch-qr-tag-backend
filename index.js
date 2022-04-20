@@ -119,7 +119,7 @@ router.post('/answer', (req, res) => {
         .and([{qr_id: req.body.qr_id},{hash: req.body.hash}])
         .then(answer => {
             if (answer) {
-                res.json({ok: false})
+                res.json({ok: false, answered: true})
             } else {
                 let answer = new Answers({
                     hash: req.body.hash,
@@ -175,7 +175,7 @@ router.post('/answer', (req, res) => {
                             
                         ], (err, result) =>{
                             if (err) {
-                                res.json({ok: false});
+                                res.json({ok: false, err: true});
                             } else {
                                 if (!result[0]) {
                                     res.json({ok: false})
