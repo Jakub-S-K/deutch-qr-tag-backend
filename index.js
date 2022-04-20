@@ -133,7 +133,9 @@ router.post('/answer', (req, res) => {
                             {
                                 $match: {
                                     hash: req.body.hash
-                                },
+                                }
+                            },
+                            {
                                 $lookup:
                                 {
                                     from: "questions",
@@ -175,11 +177,13 @@ router.post('/answer', (req, res) => {
                             if (err) {
                                 res.json({ok: false});
                             } else {
-                                res.json(result);
+                                if (!result[0]) {
+                                    res.json({ok: false})
+                                } else {
+                                    res.json(result[0]);
+                                }
                             }
-                        })
-
-                        res.json({ok: true})
+                        });
                     } else {
                         res.json({ok: false})
                     }
