@@ -294,7 +294,7 @@ router.post('/ranking', (req, res) => {
         {
             $group:
             {
-                _id: "$hash",
+                hash: "$hash",
                 count: {$sum: 1}
             }
          },
