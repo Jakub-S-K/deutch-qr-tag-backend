@@ -173,6 +173,15 @@ router.post('/answer', (req, res) => {
                                     {
                                         count: -1
                                     }
+                             },
+                             {
+                                 $lookup:
+                                 {
+                                     from: "users",
+                                     localField: "_id",
+                                     foreignField: "hash",
+                                     as: "champion"
+                                 }
                              }
                             
                         ], (err, result) =>{
