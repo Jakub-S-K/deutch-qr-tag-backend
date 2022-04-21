@@ -2,6 +2,7 @@ const { Router } = require('express');
 const express = require('express');
 const mongoose = require('mongoose');
 const short_id = require('shortid')
+const cors = require('cors');
 
 require('dotenv').config();
 
@@ -17,6 +18,7 @@ var GlobalStatus = true
 let uri = `mongodb+srv://${username}:${password}@${cluster}/${database}`;
 
 app.use(express.json());
+app.use(cors());
 
 mongoose.connect(
     uri,
