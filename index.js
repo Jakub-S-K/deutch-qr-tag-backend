@@ -316,6 +316,7 @@ router.post('/ranking', (req, res) => {
         
     ], (err, result) =>{
         if (err) {
+            console.log(err);
             res.json({ok: false});
         } else {
             res.json(result);
