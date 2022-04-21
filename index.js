@@ -240,15 +240,6 @@ router.post('/points', (req, res) => {
                     {
                         count: -1
                     }
-             },
-             {
-                 $lookup:
-                 {
-                     from: "users",
-                     localField: "hash",
-                     foreignField: "hash",
-                     as: "champion"
-                 }
              }
          
         ], (err, result) =>{
@@ -312,6 +303,15 @@ router.post('/ranking', (req, res) => {
                 {
                     count: -1
                 }
+         },
+         {
+             $lookup:
+             {
+                 from: "users",
+                 localField: "hash",
+                 foreignField: "hash",
+                 as: "champion"
+             }
          }
         
     ], (err, result) =>{
