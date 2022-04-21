@@ -294,7 +294,7 @@ router.post('/ranking', (req, res) => {
         {
             $group:
             {
-                hash: "$hash",
+                _id: "$hash",
                 count: {$sum: 1}
             }
          },
@@ -308,7 +308,7 @@ router.post('/ranking', (req, res) => {
              $lookup:
              {
                  from: "users",
-                 localField: "hash",
+                 localField: "_id",
                  foreignField: "hash",
                  as: "champion"
              }
