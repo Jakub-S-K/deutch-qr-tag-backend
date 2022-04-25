@@ -2,6 +2,7 @@ const { Router } = require('express');
 const express = require('express');
 const mongoose = require('mongoose');
 const short_id = require('shortid')
+const cors = require('cors');
 
 require('dotenv').config();
 
@@ -17,6 +18,7 @@ var GlobalStatus = true
 let uri = `mongodb+srv://${username}:${password}@${cluster}/${database}`;
 
 app.use(express.json());
+app.use(cors());
 
 mongoose.connect(
     uri,
@@ -162,7 +164,7 @@ router.post('/answer', (req, res) => {
                             {
                                 $group:
                                 {
-                                    _id: "$hash",
+                                    hash: "$hash",
                                     count: {$sum: 1}
                                 }
                              },
@@ -301,10 +303,20 @@ router.post('/ranking', (req, res) => {
                 {
                     count: -1
                 }
+         },
+         {
+             $lookup:
+             {
+                 from: "users",
+                 localField: "_id",
+                 foreignField: "hash",
+                 as: "champion"
+             }
          }
         
     ], (err, result) =>{
         if (err) {
+            console.log(err);
             res.json({ok: false});
         } else {
             res.json(result);
