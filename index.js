@@ -92,6 +92,9 @@ app.post("/api/login", function(req, res) {
     if(req.body.username && req.body.password){
       var name = req.body.name;
       var password = req.body.password;
+    } else {
+        res.status(400).json({message:"Invalid data format"});
+        return;
     }
     const admin = Admins.findOne()
       .where('login')
@@ -100,7 +103,7 @@ app.post("/api/login", function(req, res) {
             res.status(401).json({message:"There is no such a user"});
           }
           var password = Buffer.from(req.body.password);
-            
+  
             pwd.verify(password, user.password, function (err, result) {
               if (err) throw err
               
