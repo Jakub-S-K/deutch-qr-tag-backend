@@ -1,8 +1,45 @@
-const { Router } = require('express');
+const {Router} = require('express');
 const express = require('express');
 const mongoose = require('mongoose');
 const short_id = require('shortid')
 const cors = require('cors');
+
+const securePassword = require('secure-password')
+
+const pwd = securePassword()
+
+
+var _ = require("lodash");
+var bodyParser = require("body-parser");
+var jwt = require('jsonwebtoken');
+
+var passport = require("passport");
+var passportJWT = require("passport-jwt");
+
+var ExtractJwt = passportJWT.ExtractJwt;
+var JwtStrategy = passportJWT.Strategy;
+
+var jwtOptions = {}
+jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();;
+jwtOptions.secretOrKey = 'dupakupaklis699';
+
+const Admins = mongoose.model('admins', mongoose.Schema({login: String, password: Buffer}));
+
+
+var strategy = new JwtStrategy(jwtOptions, function (jwt_payload, next) {
+    Admins.findOne()
+      .where('_id')
+      .in(jwt_payload.id).then(user => {
+        if (user) {
+            next(null, user);
+        }
+        else {
+            next(null, false);
+        }
+      })
+});
+
+passport.use(strategy);
 
 require('dotenv').config();
 
@@ -17,93 +54,135 @@ var GlobalStatus = true
 
 let uri = `mongodb+srv://${username}:${password}@${cluster}/${database}`;
 
+mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
+
+app.use(passport.initialize());
 app.use(express.json());
 app.use(cors());
 
-mongoose.connect(
-    uri,
-    {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    }
-);
+const Users = mongoose.model('users', mongoose.Schema({name: String, surname: String, hash: String}));
 
-const Users = mongoose.model('users', mongoose.Schema(
-    {
-        name: String,
-        surname: String,
-        hash: String
-    }
-));
 
-const Questions = mongoose.model('questions', mongoose.Schema(
-    {
-        qr_id: String,
-        question: String,
-        a: String,
-        b: String,
-        c: String,
-        d: String,
-        answer: String
-    }
-));
+const Questions = mongoose.model('questions', mongoose.Schema({
+    qr_id: String,
+    question: String,
+    a: String,
+    b: String,
+    c: String,
+    d: String,
+    answer: String
+}));
 
-const Answers = mongoose.model('answers', mongoose.Schema(
-    {
-        hash: String,
-        qr_id: String,
-        answer: String
-    }
-));
+const Answers = mongoose.model('answers', mongoose.Schema({hash: String, qr_id: String, answer: String}));
 
 if (process.env.LE_URL && process.env.LE_CONTENT) {
-    app.get(process.env.LE_URL, function(req, res) {
-      return res.send(process.env.LE_CONTENT)
+    app.get(process.env.LE_URL, function (req, res) {
+        return res.send(process.env.LE_CONTENT)
     });
 }
 
-router.post('/checkuser', (req,res)=> {
-    if(req.body.hash) {
-        const query = Users.findOne().
-            where('hash').in(req.body.hash)
-            .then(user => {
-                if (user) {
-                    res.json({ok: true})
-                } else {
-                    res.json({ok: false})
-                }
-            })
+app.get("/api/access_test", passport.authenticate('jwt', { session: false }), function(req, res){
+    res.json({message: "Success! You can not see this without a token"});
+  });
+
+app.post("/api/login", function(req, res) {
+    if(req.body.username && req.body.password){
+      var name = req.body.name;
+      var password = req.body.password;
+    }
+    const admin = Admins.findOne()
+      .where('login')
+      .in(req.body.username).then(user => {
+        if( ! user ){
+            res.status(401).json({message:"There is no such a user"});
+          }
+          var password = Buffer.from(req.body.password);
+            
+            pwd.verify(password, user.password, function (err, result) {
+              if (err) throw err
+              
+              switch (result) {
+                case securePassword.INVALID:
+                  res.status(401).json({message:"Password did not match"});
+                  return console.log('Invalid password attempt')
+                
+                case securePassword.VALID:
+
+                      var payload = {id: user._id};
+                      var token = jwt.sign(payload, jwtOptions.secretOrKey);
+                      res.json({message: "ok", token: token});
+                  return console.log('Authenticated')
+                default:
+                    console.log("Password error switch default has been reached");
+                  break
+              }
+            })          
+      })
+  });
+
+  app.get("/api/users", passport.authenticate('jwt', { session: false }), function(req, res){
+    const query = Users.find().sort().then(users => {
+        if (users) {
+            res.json(users)
+        } else {
+            res.status(404).json({message: "There are no users"})
+        }
+    });
+  });
+  app.get("/api/user/:id", passport.authenticate('jwt', { session: false }), function(req, res){
+    const id = req.params.id;
+    if (id.length != 12 && id.length != 24) {
+        res.status(400).json({message: "Invalid Id format"})
+        return
+    }
+    const query = Users.findOne().where('_id').in(id).then(user => {
+        if (user) {
+            res.json(user)
+        } else {
+            res.status(404).json({message: "User with given id doesn't exist"})
+        }
+    });
+  });
+
+
+router.post('/checkuser', (req, res) => {
+    if (req.body.hash) {
+        const query = Users.findOne().where('hash'). in (req.body.hash).then(user => {
+            if (user) {
+                res.json({ok: true})
+            } else {
+                res.json({ok: false})
+            }
+        })
     } else {
         res.status(404);
         res.json({ok: false});
     }
 });
 
-router.post('/userinfo', (req,res)=> {
-    if(req.body.hash) {
-        const query = Users.findOne().
-            where('hash').in(req.body.hash)
-            .then(user => {
-                if (user) {
-                    res.json(user);
-                } else {
-                    res.json({ok: false});
-                }
-            })
+router.post('/userinfo', (req, res) => {
+    if (req.body.hash) {
+        const query = Users.findOne().where('hash'). in (req.body.hash).then(user => {
+            if (user) {
+                res.json(user);
+            } else {
+                res.json({ok: false});
+            }
+        })
     } else {
         res.status(404);
         res.json({ok: false});
     }
 });
-
 
 
 router.post('/question', (req, res) => {
     if (req.body.qr_id) {
-        const query = Questions.findOne()
-        .where('qr_id').in(req.body.qr_id)
-        .then(question => {
-            if (question){
+        const query = Questions.findOne().where('qr_id'). in (req.body.qr_id).then(question => {
+            if (question) {
                 res.json(question);
             } else {
                 res.json({ok: false});
@@ -117,20 +196,20 @@ router.post('/question', (req, res) => {
 
 router.post('/answer', (req, res) => {
     if (req.body.qr_id && req.body.hash && req.body.answer && GlobalStatus == true) {
-        Answers.findOne()
-        .and([{qr_id: req.body.qr_id},{hash: req.body.hash}])
-        .then(answer => {
+        Answers.findOne().and([
+            {
+                qr_id: req.body.qr_id
+            }, {
+                hash: req.body.hash
+            }
+        ]).then(answer => {
             if (answer) {
                 res.json({ok: false, answered: true})
             } else {
-                let answer = new Answers({
-                    hash: req.body.hash,
-                    qr_id: req.body.qr_id,
-                    answer: req.body.answer
-                })
+                let answer = new Answers({hash: req.body.hash, qr_id: req.body.qr_id, answer: req.body.answer})
                 answer.save((err, doc) => {
                     if (!err) {
-                        
+
                         Answers.aggregate([
                             {
                                 $match: {
@@ -138,8 +217,7 @@ router.post('/answer', (req, res) => {
                                 }
                             },
                             {
-                                $lookup:
-                                {
+                                $lookup: {
                                     from: "questions",
                                     localField: "qr_id",
                                     foreignField: "qr_id",
@@ -147,8 +225,7 @@ router.post('/answer', (req, res) => {
                                 }
                             },
                             {
-                                $project:
-                                {
+                                $project: {
                                     hash: 1,
                                     qr_id: 1,
                                     answer_correct: "$eval.answer",
@@ -156,26 +233,25 @@ router.post('/answer', (req, res) => {
                                 }
                             },
                             {
-                                $match: { $expr: {
-                                     $in: ["$answer", "$answer_correct"]
+                                $match: {
+                                    $expr: {
+                                        $in: ["$answer", "$answer_correct"]
                                     }
                                 }
-                            },
-                            {
-                                $group:
-                                {
+                            }, {
+                                $group: {
                                     hash: "$hash",
-                                    count: {$sum: 1}
-                                }
-                             },
-                             {
-                                 $sort:
-                                    {
-                                        count: -1
+                                    count: {
+                                        $sum: 1
                                     }
-                             }
-                            
-                        ], (err, result) =>{
+                                }
+                            }, {
+                                $sort: {
+                                    count: -1
+                                }
+                            }
+
+                        ], (err, result) => {
                             if (err) {
                                 res.json({ok: false, err: true});
                             } else {
@@ -192,7 +268,7 @@ router.post('/answer', (req, res) => {
                 });
             }
         });
-        
+
     }
 });
 
@@ -205,8 +281,7 @@ router.post('/points', (req, res) => {
                 }
             },
             {
-                $lookup:
-                {
+                $lookup: {
                     from: "questions",
                     localField: "qr_id",
                     foreignField: "qr_id",
@@ -214,8 +289,7 @@ router.post('/points', (req, res) => {
                 }
             },
             {
-                $project:
-                {
+                $project: {
                     hash: 1,
                     qr_id: 1,
                     answer_correct: "$eval.answer",
@@ -223,26 +297,25 @@ router.post('/points', (req, res) => {
                 }
             },
             {
-                $match: { $expr: {
-                     $in: ["$answer", "$answer_correct"]
+                $match: {
+                    $expr: {
+                        $in: ["$answer", "$answer_correct"]
                     }
                 }
-            },
-            {
-                $group:
-                {
+            }, {
+                $group: {
                     _id: "$hash",
-                    count: {$sum: 1}
-                }
-             },
-             {
-                 $sort:
-                    {
-                        count: -1
+                    count: {
+                        $sum: 1
                     }
-             }
-         
-        ], (err, result) =>{
+                }
+            }, {
+                $sort: {
+                    count: -1
+                }
+            }
+
+        ], (err, result) => {
             if (err) {
                 res.json({ok: false, err: true});
             } else {
@@ -258,7 +331,7 @@ router.post('/points', (req, res) => {
 
 router.post('/settings', (req, res) => {
     if (req.body.status && req.body.auth == process.env.AUTH_KEY) {
-        GlobalStatus = req.body.status; //Turn off sending answers
+        GlobalStatus = req.body.status; // Turn off sending answers
     } else {
         res.json({ok: false});
     }
@@ -268,8 +341,7 @@ router.post('/settings', (req, res) => {
 router.post('/ranking', (req, res) => {
     Answers.aggregate([
         {
-            $lookup:
-            {
+            $lookup: {
                 from: "questions",
                 localField: "qr_id",
                 foreignField: "qr_id",
@@ -277,8 +349,7 @@ router.post('/ranking', (req, res) => {
             }
         },
         {
-            $project:
-            {
+            $project: {
                 hash: 1,
                 qr_id: 1,
                 answer_correct: "$eval.answer",
@@ -286,35 +357,33 @@ router.post('/ranking', (req, res) => {
             }
         },
         {
-            $match: { $expr: {
-                 $in: ["$answer", "$answer_correct"]
+            $match: {
+                $expr: {
+                    $in: ["$answer", "$answer_correct"]
                 }
             }
         },
         {
-            $group:
-            {
+            $group: {
                 _id: "$hash",
-                count: {$sum: 1}
-            }
-         },
-         {
-             $sort:
-                {
-                    count: -1
+                count: {
+                    $sum: 1
                 }
-         },
-         {
-             $lookup:
-             {
-                 from: "users",
-                 localField: "_id",
-                 foreignField: "hash",
-                 as: "champion"
-             }
-         }
-        
-    ], (err, result) =>{
+            }
+        }, {
+            $sort: {
+                count: -1
+            }
+        }, {
+            $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "hash",
+                as: "champion"
+            }
+        }
+
+    ], (err, result) => {
         if (err) {
             console.log(err);
             res.json({ok: false});
