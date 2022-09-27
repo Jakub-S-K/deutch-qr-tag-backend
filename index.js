@@ -13,6 +13,8 @@ var _ = require("lodash");
 var bodyParser = require("body-parser");
 var jwt = require('jsonwebtoken');
 
+require('dotenv').config();
+
 var passport = require("passport");
 var passportJWT = require("passport-jwt");
 
@@ -21,7 +23,7 @@ var JwtStrategy = passportJWT.Strategy;
 
 var jwtOptions = {}
 jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();;
-jwtOptions.secretOrKey = 'dupakupaklis699';
+jwtOptions.secretOrKey = process.env.JWT_SECRET;
 
 const Admins = mongoose.model('admins', mongoose.Schema({login: String, password: Buffer}));
 
@@ -41,7 +43,6 @@ var strategy = new JwtStrategy(jwtOptions, function (jwt_payload, next) {
 
 passport.use(strategy);
 
-require('dotenv').config();
 
 const app = express()
 const router = express.Router();
