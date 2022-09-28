@@ -420,7 +420,7 @@ const broadcast = (clients, message) => {
         return;
     }
     clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
+        if (client.readyState === expressWs.getWss().WebSocket.OPEN) {
             client.send(message);
         }
     });
