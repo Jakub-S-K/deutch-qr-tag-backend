@@ -408,6 +408,7 @@ router.post("/api/send", (req, res) => {
     }
     if (!req.app.locals.clients) {
         res.status(404).json({message: 'There are no connected clients'})
+        return
     }
     //console.log(JSON.stringify({message: req.body.message}));
     broadcast(req.app.locals.clients, JSON.stringify({message: req.body.message}));
