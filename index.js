@@ -1,8 +1,8 @@
 const {Router} = require('express');
 const express = require('express');
 const mongoose = require('mongoose');
-const short_id = require('shortid')
 const cors = require('cors');
+const WebSocket = require('ws');
 
 const securePassword = require('secure-password')
 
@@ -27,18 +27,14 @@ jwtOptions.secretOrKey = process.env.JWT_SECRET;
 
 const Admins = mongoose.model('admins', mongoose.Schema({login: String, password: Buffer}));
 
-
 var strategy = new JwtStrategy(jwtOptions, function (jwt_payload, next) {
-    Admins.findOne()
-      .where('_id')
-      .in(jwt_payload.id).then(user => {
+    Admins.findOne().where('_id'). in (jwt_payload.id).then(user => {
         if (user) {
             next(null, user);
-        }
-        else {
+        } else {
             next(null, false);
         }
-      })
+    })
 });
 
 passport.use(strategy);
@@ -46,6 +42,9 @@ passport.use(strategy);
 
 const app = express()
 const router = express.Router();
+
+const expressWs = require('express-ws')(app);
+
 const username = encodeURIComponent(process.env.DB_USR_LOGIN);
 const password = encodeURIComponent(process.env.DB_USR_PASS);
 const cluster = process.env.DB_CLUSTER;
@@ -60,8 +59,10 @@ mongoose.connect(uri, {
     useUnifiedTopology: true
 });
 
+
 app.use(passport.initialize());
-app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}))
 app.use(cors());
 
 const Users = mongoose.model('users', mongoose.Schema({name: String, surname: String, hash: String}));
@@ -85,49 +86,51 @@ if (process.env.LE_URL && process.env.LE_CONTENT) {
     });
 }
 
-app.get("/api/access_test", passport.authenticate('jwt', { session: false }), function(req, res){
+router.get("/api/access_test", passport.authenticate('jwt', {session: false}), function (req, res) {
     res.json({message: "Success! You can not see this without a token"});
-  });
+});
 
-app.post("/api/login", function(req, res) {
-    if(req.body.username && req.body.password){
-      var name = req.body.name;
-      var password = req.body.password;
+router.post("/api/login", function (req, res) {
+    if (req.body.username && req.body.password) {
+        var name = req.body.name;
+        var password = req.body.password;
     } else {
-        res.status(400).json({message:"Invalid data format"});
+        res.status(400).json({message: "Invalid data format"});
         return;
     }
-    const admin = Admins.findOne()
-      .where('login')
-      .in(req.body.username).then(user => {
-        if( ! user ){
-            res.status(401).json({message:"There is no such a user"});
-          }
-          var password = Buffer.from(req.body.password);
-  
-            pwd.verify(password, user.password, function (err, result) {
-              if (err) throw err
-              
-              switch (result) {
-                case securePassword.INVALID:
-                  res.status(401).json({message:"Password did not match"});
-                  return console.log('Invalid password attempt')
-                
+    const admin = Admins.findOne().where('login'). in (req.body.username).then(user => {
+        if (!user) {
+            res.status(404).json({message: "There is no such a user"});
+        }
+        var password = Buffer.from(req.body.password);
+
+        pwd.verify(password, user.password, function (err, result) {
+            if (err) 
+                throw err
+
+            
+
+            switch (result) {
+                case securePassword.INVALID: res.status(400).json({message: "Password did not match"});
+                    return console.log('Invalid password attempt')
+
                 case securePassword.VALID:
 
-                      var payload = {id: user._id};
-                      var token = jwt.sign(payload, jwtOptions.secretOrKey);
-                      res.json({message: "ok", token: token});
-                  return console.log('Authenticated')
+                    var payload = {
+                        id: user._id
+                    };
+                    var token = jwt.sign(payload, jwtOptions.secretOrKey);
+                    res.json({message: "ok", token: token});
+                    return console.log('Authenticated')
                 default:
                     console.log("Password error switch default has been reached");
-                  break
-              }
-            })          
-      })
-  });
+                    break
+            }
+        })
+    })
+});
 
-  app.get("/api/users", passport.authenticate('jwt', { session: false }), function(req, res){
+router.get("/api/users", passport.authenticate('jwt', {session: false}), function (req, res) {
     const query = Users.find().sort().then(users => {
         if (users) {
             res.json(users)
@@ -135,21 +138,21 @@ app.post("/api/login", function(req, res) {
             res.status(404).json({message: "There are no users"})
         }
     });
-  });
-  app.get("/api/user/:id", passport.authenticate('jwt', { session: false }), function(req, res){
+});
+router.get("/api/user/:id", passport.authenticate('jwt', {session: false}), function (req, res) {
     const id = req.params.id;
     if (id.length != 12 && id.length != 24) {
         res.status(400).json({message: "Invalid Id format"})
         return
     }
-    const query = Users.findOne().where('_id').in(id).then(user => {
+    const query = Users.findOne().where('_id'). in (id).then(user => {
         if (user) {
             res.json(user)
         } else {
             res.status(404).json({message: "User with given id doesn't exist"})
         }
     });
-  });
+});
 
 
 router.post('/checkuser', (req, res) => {
@@ -396,6 +399,42 @@ router.post('/ranking', (req, res) => {
         }
     })
 });
+
+router.post("/api/send", (req, res) => {
+    //console.log(req.body);
+    if (!req.body.message) {
+        res.status(400).json({message: 'Invalid request format'});
+        return;
+    }
+
+    //console.log(JSON.stringify({message: req.body.message}));
+    broadcast(req.app.locals.clients, JSON.stringify({message: req.body.message}));
+
+    res.sendStatus(200);
+});
+
+const broadcast = (clients, message) => {
+    if (!clients) {
+        return;
+    }
+    clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+};
+
+
+ app.ws('/api/socket/broadcast', function(ws, req) {
+    ws.on('message', function(msg) {
+        //console.log("Total connected clients:", expressWs.getWss().clients.size);
+        //console.log(msg);
+        ws.send(msg);
+
+        app.locals.clients = expressWs.getWss().clients;
+    });
+ });
+
 
 app.use('/', router);
 
