@@ -406,7 +406,9 @@ router.post("/api/send", (req, res) => {
         res.status(400).json({message: 'Invalid request format'});
         return;
     }
-
+    if (!req.app.locals.clients) {
+        res.status(404).json({message: 'There are no connected clients'})
+    }
     //console.log(JSON.stringify({message: req.body.message}));
     broadcast(req.app.locals.clients, JSON.stringify({message: req.body.message}));
 
