@@ -73,7 +73,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(cors());
 
-const Users = mongoose.model('users', mongoose.Schema({name: String, surname: String, hash: String}));
+const Users = mongoose.model('users', mongoose.Schema({name: String, surname: String}));
 
 const Questions = mongoose.model('questions', mongoose.Schema({
     qr_id: String,
@@ -92,7 +92,6 @@ if (process.env.LE_URL && process.env.LE_CONTENT) {
         return res.send(process.env.LE_CONTENT)
     });
 }
-
 
 router.get("/api/access_test", passport.authenticate('jwt', {session: false}), function (req, res) {
     res.json({message: "Success! You can not see this without a token"});
@@ -138,6 +137,29 @@ router.post("/api/login", function (req, res) {
     })
 });
 
+router.post("/api/add/user", passport.authenticate('jwt', {session: false}), function (req, res) {
+    if (req.body.name && req.body.surname) {
+        let user = new Users({
+            name: req.body.name,
+            surname: req.body.surname
+        });
+        user.save((err, doc) => {
+                if (!err) {
+                    res.json({msg: 'ok', _id: doc._id});
+                } else {
+                    console.log('Unexpected error ocurred /api/add/user database populate');
+                    res.status(500).json({msg: 'Interval server error'})
+                }
+            }
+        )
+        
+    } else {
+        console.log(req.name);
+        console.log(req.surname);
+        res.status(400).json({msg: 'Invalid request format'});
+    }
+});
+
 router.get("/api/users", passport.authenticate('jwt', {session: false}), function (req, res) {
     const query = Users.find().sort().then(users => {
         if (users) {
@@ -147,6 +169,7 @@ router.get("/api/users", passport.authenticate('jwt', {session: false}), functio
         }
     });
 });
+
 router.get("/api/user/:id", passport.authenticate('jwt', {session: false}), function (req, res) {
     const id = req.params.id;
     if (id.length != 12 && id.length != 24) {
