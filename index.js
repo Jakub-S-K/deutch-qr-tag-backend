@@ -3,11 +3,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const WebSocket = require('ws');
+const rateLimit =  require('express-rate-limit');
 
 const securePassword = require('secure-password')
 
 const pwd = securePassword()
-
 
 var _ = require("lodash");
 var bodyParser = require("body-parser");
@@ -39,6 +39,14 @@ var strategy = new JwtStrategy(jwtOptions, function (jwt_payload, next) {
 
 passport.use(strategy);
 
+const limiter = rateLimit.rateLimit({
+	windowMs: 10 * 60 * 1000, // 15 minutes
+	max: 6000, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+})
+
+// Apply the rate limiting middleware to all requests
 
 const app = express()
 const router = express.Router();
@@ -50,6 +58,7 @@ const password = encodeURIComponent(process.env.DB_USR_PASS);
 const cluster = process.env.DB_CLUSTER;
 const database = process.env.DB_NAME;
 
+
 var GlobalStatus = true
 
 let uri = `mongodb+srv://${username}:${password}@${cluster}/${database}`;
@@ -59,14 +68,13 @@ mongoose.connect(uri, {
     useUnifiedTopology: true
 });
 
-
+app.use(limiter);
 app.use(passport.initialize());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(cors());
 
 const Users = mongoose.model('users', mongoose.Schema({name: String, surname: String, hash: String}));
-
 
 const Questions = mongoose.model('questions', mongoose.Schema({
     qr_id: String,
@@ -85,6 +93,9 @@ if (process.env.LE_URL && process.env.LE_CONTENT) {
         return res.send(process.env.LE_CONTENT)
     });
 }
+
+app.set('trust proxy', 1);
+app.get('/api/ip', (request, response) => response.send(request.ip));
 
 router.get("/api/access_test", passport.authenticate('jwt', {session: false}), function (req, res) {
     res.json({message: "Success! You can not see this without a token"});
@@ -108,8 +119,6 @@ router.post("/api/login", function (req, res) {
             if (err) 
                 throw err
 
-            
-
             switch (result) {
                 case securePassword.INVALID: res.status(400).json({message: "Password did not match"});
                     return console.log('Invalid password attempt')
@@ -117,8 +126,10 @@ router.post("/api/login", function (req, res) {
                 case securePassword.VALID:
 
                     var payload = {
-                        id: user._id
+                        id: user._id,
+                        exp: Math.floor(Date.now() / 1000) + (60* 120)
                     };
+
                     var token = jwt.sign(payload, jwtOptions.secretOrKey);
                     res.json({message: "ok", token: token});
                     return console.log('Authenticated')
@@ -426,7 +437,6 @@ const broadcast = (clients, message) => {
         }
     });
 };
-
 
  app.ws('/api/socket/broadcast', function(ws, req) {
     ws.on('message', function(msg) {
