@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const WebSocket = require('ws');
-const rateLimit =  require('express-rate-limit');
+const rateLimit = require('express-rate-limit');
 
 const securePassword = require('secure-password')
 
@@ -40,10 +40,10 @@ var strategy = new JwtStrategy(jwtOptions, function (jwt_payload, next) {
 passport.use(strategy);
 
 const limiter = rateLimit.rateLimit({
-	windowMs: 10 * 60 * 1000, // 15 minutes
-	max: 6000, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    windowMs: 10 * 60 * 1000, // 15 minutes
+    max: 6000, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 })
 
 const app = express()
@@ -115,6 +115,10 @@ router.post("/api/login", function (req, res) {
             if (err) 
                 throw err
 
+
+            
+
+
             switch (result) {
                 case securePassword.INVALID: res.status(400).json({message: "Password did not match"});
                     return console.log('Invalid password attempt')
@@ -123,7 +127,7 @@ router.post("/api/login", function (req, res) {
 
                     var payload = {
                         id: user._id,
-                        exp: Math.floor(Date.now() / 1000) + (60* 120)
+                        exp: Math.floor(Date.now() / 1000) + (60 * 120)
                     };
 
                     var token = jwt.sign(payload, jwtOptions.secretOrKey);
@@ -137,22 +141,18 @@ router.post("/api/login", function (req, res) {
     })
 });
 
-router.post("/api/add/user", passport.authenticate('jwt', {session: false}), function (req, res) {
+router.post("/api/user", passport.authenticate('jwt', {session: false}), function (req, res) {
     if (req.body.name && req.body.surname) {
-        let user = new Users({
-            name: req.body.name,
-            surname: req.body.surname
-        });
+        let user = new Users({name: req.body.name, surname: req.body.surname});
         user.save((err, doc) => {
-                if (!err) {
-                    res.json({msg: 'ok', _id: doc._id});
-                } else {
-                    console.log('Unexpected error ocurred /api/add/user database populate');
-                    res.status(500).json({msg: 'Interval server error'})
-                }
+            if (!err) {
+                res.json({msg: 'ok', _id: doc._id});
+            } else {
+                console.log('Unexpected error ocurred /api/add/user database populate');
+                res.status(500).json({msg: 'Interval server error'})
             }
-        )
-        
+        })
+
     } else {
         console.log(req.name);
         console.log(req.surname);
@@ -194,15 +194,28 @@ router.delete("/api/user/:id", passport.authenticate('jwt', {session: false}), f
         if (err) {
             console.log(err);
         } else {
-            if (!docs) {
-                //console.log('Resource not found');
+            if (! docs) { // console.log('Resource not found');
                 res.status(406).json({msg: "Resource not found"});
-            } else {
-                //console.log("Deleted :", docs);
+            } else { // console.log("Deleted :", docs);
                 res.status(200).json({msg: 'Ok'});
             }
         }
-      })
+    })
+});
+
+router.patch('/api/user/:id', passport.authenticate('jwt', {session: false}), function (req, res) {
+    const id = req.params.id
+    if (id.length != 12 && id.length != 24) {
+        return res.status(400).json({msg: "Invalid Id format"});
+    }
+
+    Users.findByIdAndUpdate(id, req.body, function (err, data) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.json({msg: 'ok'})
+        }
+    })
 });
 
 router.post('/checkuser', (req, res) => {
@@ -450,8 +463,7 @@ router.post('/ranking', (req, res) => {
     })
 });
 
-router.post("/api/send", (req, res) => {
-    //console.log(req.body);
+router.post("/api/send", (req, res) => { // console.log(req.body);
     if (!req.body.message) {
         res.status(400).json({message: 'Invalid request format'});
         return;
@@ -460,7 +472,7 @@ router.post("/api/send", (req, res) => {
         res.status(404).json({message: 'There are no connected clients'})
         return
     }
-    //console.log(JSON.stringify({message: req.body.message}));
+    // console.log(JSON.stringify({message: req.body.message}));
     broadcast(req.app.locals.clients, JSON.stringify({message: req.body.message}));
 
     res.sendStatus(200);
@@ -477,15 +489,15 @@ const broadcast = (clients, message) => {
     });
 };
 
- app.ws('/api/socket/broadcast', function(ws, req) {
-    ws.on('message', function(msg) {
-        //console.log("Total connected clients:", expressWs.getWss().clients.size);
-        //console.log(msg);
+app.ws('/api/socket/broadcast', function (ws, req) {
+    ws.on('message', function (msg) {
+        // console.log("Total connected clients:", expressWs.getWss().clients.size);
+        // console.log(msg);
         ws.send(msg);
 
         app.locals.clients = expressWs.getWss().clients;
     });
- });
+});
 
 
 app.use('/', router);
