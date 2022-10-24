@@ -46,8 +46,6 @@ const limiter = rateLimit.rateLimit({
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 })
 
-// Apply the rate limiting middleware to all requests
-
 const app = express()
 const router = express.Router();
 
@@ -69,6 +67,7 @@ mongoose.connect(uri, {
 });
 
 app.use(limiter);
+app.set('trust proxy', 1);
 app.use(passport.initialize());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}))
@@ -94,8 +93,6 @@ if (process.env.LE_URL && process.env.LE_CONTENT) {
     });
 }
 
-app.set('trust proxy', 1);
-app.get('/api/ip', (request, response) => response.send(request.ip));
 
 router.get("/api/access_test", passport.authenticate('jwt', {session: false}), function (req, res) {
     res.json({message: "Success! You can not see this without a token"});
