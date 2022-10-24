@@ -185,6 +185,25 @@ router.get("/api/user/:id", passport.authenticate('jwt', {session: false}), func
     });
 });
 
+router.delete("/api/user/:id", passport.authenticate('jwt', {session: false}), function (req, res) {
+    const id = req.params.id;
+    if (id.length != 12 && id.length != 24) {
+        res.status(400).json({msg: "Invalid Id format"})
+    }
+    Users.findByIdAndDelete(id, function (err, docs) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (!docs) {
+                //console.log('Resource not found');
+                res.status(406).json({msg: "Resource not found"});
+            } else {
+                //console.log("Deleted :", docs);
+                res.status(200).json({msg: 'Ok'});
+            }
+        }
+      })
+});
 
 router.post('/checkuser', (req, res) => {
     if (req.body.hash) {
