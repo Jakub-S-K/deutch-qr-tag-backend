@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const WebSocket = require('ws');
 const rateLimit = require('express-rate-limit');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 
 const Schemas = require('./schemas/schemas.js');
 
@@ -24,9 +26,13 @@ const limiter = rateLimit.rateLimit({
 })
 
 const app = express()
-const router = express.Router();
 
-const expressWs = require('express-ws')(app);
+const httpServer = createServer(app);
+const io = new Server(httpServer, { path: '/broadcast' });
+
+//const expressWs = require('express-ws')(app);
+
+const router = express.Router();
 
 const username = encodeURIComponent(process.env.DB_USR_LOGIN);
 const password = encodeURIComponent(process.env.DB_USR_PASS);
@@ -67,43 +73,50 @@ router.post('/settings', (req, res) => {
 });
 
 
-router.post("/api/send", (req, res) => { // console.log(req.body);
-    if (!req.body.message) {
-        res.status(400).json({message: 'Invalid request format'});
-        return;
-    }
-    if (!req.app.locals.clients) {
-        res.status(404).json({message: 'There are no connected clients'})
-        return
-    }
-    // console.log(JSON.stringify({message: req.body.message}));
-    broadcast(req.app.locals.clients, JSON.stringify({message: req.body.message}));
+// router.post("/api/send", (req, res) => { // console.log(req.body);
+//     if (!req.body.message) {
+//         res.status(400).json({message: 'Invalid request format'});
+//         return;
+//     }
+//     if (!req.app.locals.clients) {
+//         res.status(404).json({message: 'There are no connected clients'})
+//         return
+//     }
+//     // console.log(JSON.stringify({message: req.body.message}));
+//     broadcast(req.app.locals.clients, JSON.stringify({message: req.body.message}));
 
-    res.sendStatus(200);
-});
+//     res.sendStatus(200);
+// });
 
-const broadcast = (clients, message) => {
-    if (!clients) {
-        return;
-    }
-    clients.forEach((client) => {
-        if (client.readyState === expressWs.getWss().WebSocket.OPEN) {
-            client.send(message);
-        }
-    });
-};
+// const broadcast = (clients, message) => {
+//     if (!clients) {
+//         return;
+//     }
+//     clients.forEach((client) => {
+//         if (client.readyState === expressWs.getWss().WebSocket.OPEN) {
+//             client.send(message);
+//         }
+//     });
+// };
 
-app.ws('/api/socket/broadcast', function (ws, req) {
-    ws.on('message', function (msg) {
-        // console.log("Total connected clients:", expressWs.getWss().clients.size);
-        // console.log(msg);
-        ws.send(msg);
+// app.ws('/api/socket/broadcast', function (ws, req) {
+//     ws.on('message', function (msg) {
+//         // console.log("Total connected clients:", expressWs.getWss().clients.size);
+//         // console.log(msg);
+//         ws.send(msg);
 
-        app.locals.clients = expressWs.getWss().clients;
-    });
-});
+//         app.locals.clients = expressWs.getWss().clients;
+//     });
+// });
 
+io
+.on('connection', function(socket) {
+    console.log('a user connected, id ' + socket.id);
+    socket.on('disconnect', function() {
+        console.log('a user disconnected, id '  + socket.id);
+    })
+})
 
 app.use('/', router);
 
-app.listen(process.env.PORT, () => console.log("Server is running on PORT " + process.env.PORT))
+httpServer.listen(process.env.PORT, () => console.log("Server is running on PORT " + process.env.PORT))

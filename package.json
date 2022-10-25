@@ -24,6 +24,7 @@
     "rate-limitter": "^0.0.2",
     "secure-password": "^4.0.0",
     "shortid": "^2.2.16",
+    "socket.io": "^4.5.3",
     "ws": "^8.9.0"
   }
 }
