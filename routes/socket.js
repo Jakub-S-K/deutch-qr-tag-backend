@@ -19,9 +19,7 @@ module.exports = function(app, io) {
     }
     
     function get_socket_connected_count(req, res) {
-        router.get('/socket/amount', (req, res) => {
-            res.json({amount: socket_connected_users});
-        });
+        res.json({amount: socket_connected_users});
     }
 
     function register_socket (io) {
