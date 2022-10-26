@@ -19,6 +19,7 @@ module.exports = function (app) {
 
     router.get('/access_test', passport.authenticate('jwt', {session: false}), auth.get_access_test);
     
+    
     app.use('/api', router);
     app.post('/login', auth.post_login);
 }

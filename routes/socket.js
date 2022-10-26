@@ -32,7 +32,6 @@ module.exports = function(app, io) {
         }) 
     }
     
-
     app.post('/socket/broadcast', passport.authenticate('jwt', {session: false}), post_broadcast_msg);
     app.get('/socket/clients', get_socket_connected_count);
 }
