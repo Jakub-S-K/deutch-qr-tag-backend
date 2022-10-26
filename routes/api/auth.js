@@ -28,10 +28,7 @@ module.exports.strategy = new JwtStrategy(jwtOptions, function (jwt_payload, nex
 passport.use(this.strategy);
 
 module.exports.post_login = function (req, res) {
-    if (req.body.username && req.body.password) {
-        var name = req.body.name;
-        var password = req.body.password;
-    } else {
+    if (!req.body.username || !req.body.password ) {
         res.status(400).json({message: "Invalid data format"});
         return;
     }

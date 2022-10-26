@@ -1,19 +1,10 @@
-const {Router} = require('express');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const WebSocket = require('ws');
 const rateLimit = require('express-rate-limit');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 
-const Schemas = require('./schemas/schemas.js');
-
-const Admins = Schemas.admins;
-const Users = Schemas.users;
-const Questions = Schemas.questions;
-
-var _ = require("lodash");
 var bodyParser = require("body-parser");
 
 require('dotenv').config();
@@ -28,7 +19,7 @@ const limiter = rateLimit.rateLimit({
 const app = express()
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, { path: '/broadcast' });
+const io = new Server(httpServer, {});
 
 //const expressWs = require('express-ws')(app);
 
@@ -62,6 +53,7 @@ if (process.env.LE_URL && process.env.LE_CONTENT) {
 
 require('./routes/routers.js')(app);
 require('./routes/old_routes.js')(app);
+require('./routes/socket.js')(app, io);
 
 router.post('/settings', (req, res) => {
     if (req.body.status && req.body.auth == process.env.AUTH_KEY) {
@@ -71,51 +63,6 @@ router.post('/settings', (req, res) => {
     }
     res.json({ok: true})
 });
-
-
-// router.post("/api/send", (req, res) => { // console.log(req.body);
-//     if (!req.body.message) {
-//         res.status(400).json({message: 'Invalid request format'});
-//         return;
-//     }
-//     if (!req.app.locals.clients) {
-//         res.status(404).json({message: 'There are no connected clients'})
-//         return
-//     }
-//     // console.log(JSON.stringify({message: req.body.message}));
-//     broadcast(req.app.locals.clients, JSON.stringify({message: req.body.message}));
-
-//     res.sendStatus(200);
-// });
-
-// const broadcast = (clients, message) => {
-//     if (!clients) {
-//         return;
-//     }
-//     clients.forEach((client) => {
-//         if (client.readyState === expressWs.getWss().WebSocket.OPEN) {
-//             client.send(message);
-//         }
-//     });
-// };
-
-// app.ws('/api/socket/broadcast', function (ws, req) {
-//     ws.on('message', function (msg) {
-//         // console.log("Total connected clients:", expressWs.getWss().clients.size);
-//         // console.log(msg);
-//         ws.send(msg);
-
-//         app.locals.clients = expressWs.getWss().clients;
-//     });
-// });
-
-io
-.on('connection', function(socket) {
-    console.log('a user connected, id ' + socket.id);
-    socket.on('disconnect', function() {
-        console.log('a user disconnected, id '  + socket.id);
-    })
-})
 
 app.use('/', router);
 
