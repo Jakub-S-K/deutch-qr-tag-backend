@@ -4,7 +4,7 @@ const Admins = mongoose.model('admins', mongoose.Schema({
     login: String, 
     password: Buffer 
 }));
-const QR = mongoose.model('QRs', mongoose.Schema({
+const QR = mongoose.model('qrs', mongoose.Schema({
     question_id: mongoose.Types.ObjectId,
     data: {decoded: String, img: Buffer}
 }))

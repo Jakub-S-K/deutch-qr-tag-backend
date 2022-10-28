@@ -17,6 +17,8 @@ module.exports.getQRByQuestionID = function (req, res) {
             return res.status(500).json({msg: 'Internal Error'});
         }
         console.log(data);
+        res.write(data['data']['img']);
+        res.end();
     });
 }
 
@@ -27,7 +29,7 @@ module.exports.postNewQrCode = function (req, res) {
     let id = req.body.id;
     let text = req.body.text;
     let qr = new QRs({
-        id: mongoose.Types.ObjectId(id),
+        id: mongoose.Types.ObjectId.createFromHexString(id),
         data: {decoded: text, img: QR_gen.imageSync(text)}
     })
     qr.save((err, doc) => {
