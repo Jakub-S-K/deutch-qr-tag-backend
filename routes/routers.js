@@ -2,6 +2,8 @@ const express = require('express')
 const user = require('./api/user.js');
 const users = require('./api/users.js');
 const auth = require('./api/auth.js');
+const qr = require('./api/qr.js');
+
 var passport = require('passport');
 
 module.exports = function (app) {
@@ -18,6 +20,9 @@ module.exports = function (app) {
     router.get('/users', passport.authenticate('jwt', {session: false}), users.get);
 
     router.get('/access_test', passport.authenticate('jwt', {session: false}), auth.get_access_test);
+    
+    router.post('/qr', passport.authenticate('jwt', {session: false}), qr.postNewQrCode);
+
     router.post('/login', auth.post_login);
     
     

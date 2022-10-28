@@ -23,14 +23,14 @@ module.exports.post = function (req, res) {
 module.exports.get = function (req, res) {
     const id = req.params.id;
     if (id.length != 12 && id.length != 24) {
-        res.status(400).json({message: "Invalid Id format"})
+        res.status(400).json({msg: "Invalid Id format"})
         return
     }
     Users.findOne().where('_id'). in (id).then(user => {
         if (user) {
             res.json(user)
         } else {
-            res.status(404).json({message: "User with given id doesn't exist"})
+            res.status(404).json({msg: "User with given id doesn't exist"})
         }
     }); 
 }
@@ -65,5 +65,5 @@ module.exports.patch = function(req, res) {
         } else {
             res.json({msg: 'ok'})
         }
-    }) 
+    })
 }
