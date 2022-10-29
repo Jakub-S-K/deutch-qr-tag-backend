@@ -4,6 +4,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+const Users = require('./schemas/schemas.js').users;
 
 var bodyParser = require("body-parser");
 
@@ -19,9 +20,7 @@ const limiter = rateLimit.rateLimit({
 const app = express()
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, {});
-
-//const expressWs = require('express-ws')(app);
+const io = new Server(httpServer, {path: '/socket'});
 
 const router = express.Router();
 
