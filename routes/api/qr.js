@@ -15,10 +15,14 @@ module.exports.getQRByQuestionID = function (req, res) {
         if (err) {
             console.log('Error in /get/qr');
             return res.status(500).json({msg: 'Internal Error'});
+        } else {
+            if (data === null) {
+                res.status(404).send();
+            } else {
+                res.write(data['data']['img']);
+                res.end();
+            }
         }
-        console.log(data);
-        res.write(data['data']['img']);
-        res.end();
     });
 }
 
