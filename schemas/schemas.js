@@ -10,7 +10,7 @@ const QR = mongoose.model('qrs', mongoose.Schema({
         enum: ['user', 'question'],
         default: 'question'
     },
-    question_id: mongoose.Types.ObjectId,
+    obj_id: mongoose.Types.ObjectId,
     img: Buffer
 }))
 

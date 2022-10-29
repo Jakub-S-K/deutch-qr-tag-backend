@@ -7,32 +7,37 @@ const QRs = require('../../schemas/schemas.js').qr;
 
 module.exports.getQRByQuestionID = function (req, res) {
     const id = req.params.id;
-    if (id.length != 12 && id.length != 24) {
-        res.status(400).json({msg: "Invalid Id format"})
-        return
+    const type = req.params.type;
+
+    if ((id.length != 12 && id.length != 24) || !type) {
+        return res.status(400).json({msg: "Invalid parameters"})
+    } else {
+        QRs.findOne().and([{obj_id: id}, {type: type}]).then(qr => {
+            if (qr) {
+                res.write(qr.img);
+                res.end();
+            } else {
+                res.status(404).send();
+            }
+        })
     }
-    QRs.findOne().where('question_id').in(id).then(qr => {
-        if (qr) {
-            res.write(qr.img);
-            res.end();
-        } else {
-            res.status(404).send();
-        }
-    })
 }
 
 module.exports.postNewQrCode = function (req, res) {
-    if (!req.body.id) {
+    if (!req.body.obj_id || !req.body.type) {
         return res.status(400).json({msg: "Invalid request format"});
     }
-    let id = req.body.id;
+    const id = req.body.obj_id;
+    const type = req.body.type;
 
-    QRs.findOne().where('question_id').in(id).then(qr => {
+    QRs.findOne().and([{obj_id: id}, {type: type}])
+    .then(qr => {
         if (qr) {
             return res.status(409).json({msg: 'Conflict, Resource already exists'});
         } else {
             let qr = new QRs({
-                question_id: mongoose.Types.ObjectId.createFromHexString(id),
+                obj_id: mongoose.Types.ObjectId.createFromHexString(id),
+                type: type,
                 img: QR_gen.imageSync(id)
             })
             qr.save((err, doc) => {
