@@ -5,7 +5,25 @@ require('mongoose')
 const QR_gen = require('qr-image');
 const QRs = require('../../schemas/schemas.js').qr;
 
-module.exports.getQRByQuestionID = function (req, res) {
+module.exports.getQRByObjectIdAndType = function (req, res) {
+    const id = req.params.id;
+    const type = req.params.type;
+
+    if ((id.length != 12 && id.length != 24) || !type) {
+        return res.status(400).json({msg: "Invalid parameters"})
+    } else {
+        QRs.findOne().and([{obj_id: id}, {type: type}]).then(qr => {
+            if (qr) {
+                res.write(qr.img);
+                res.end();
+            } else {
+                res.status(404).send();
+            }
+        })
+    }
+}
+
+module.exports.getQRByID = function (req, res) {
     const id = req.params.id;
 
     if (id.length != 12 && id.length != 24) {

@@ -22,7 +22,8 @@ module.exports = function (app) {
     router.get('/access_test', passport.authenticate('jwt', {session: false}), auth.get_access_test);
     
     router.post('/qr', passport.authenticate('jwt', {session: false}), qr.postNewQrCode);
-    router.get('/qr/:id', qr.getQRByQuestionID);
+    router.get('/qr/:id/:type', passport.authenticate('jwt', {session: false}), qr.getQRByObjectIdAndType);
+    router.get('/qr/:id', passport.authenticate('jwt', {session: false}), qr.getQRByID);
 
     router.post('/login', auth.post_login);
 
