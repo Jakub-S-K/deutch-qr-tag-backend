@@ -6,7 +6,7 @@ const Admins = mongoose.model('admins', mongoose.Schema({
 }));
 const QR = mongoose.model('qrs', mongoose.Schema({
     question_id: mongoose.Types.ObjectId,
-    data: {decoded: String, img: Buffer}
+    img: Buffer
 }))
 
 const Users = mongoose.model('users', mongoose.Schema({ 
