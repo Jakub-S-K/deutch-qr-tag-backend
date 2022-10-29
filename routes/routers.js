@@ -25,7 +25,8 @@ module.exports = function (app) {
     router.get('/qr/:id', qr.getQRByQuestionID);
 
     router.post('/login', auth.post_login);
-    
+
+    //There are some /api routes in socket.js
     
     app.use('/api', router);
 }
