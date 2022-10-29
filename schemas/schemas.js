@@ -5,6 +5,11 @@ const Admins = mongoose.model('admins', mongoose.Schema({
     password: Buffer 
 }));
 const QR = mongoose.model('qrs', mongoose.Schema({
+    type: {
+        type: String,
+        enum: ['user', 'question'],
+        default: 'question'
+    },
     question_id: mongoose.Types.ObjectId,
     img: Buffer
 }))
