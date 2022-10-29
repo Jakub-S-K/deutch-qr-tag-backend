@@ -7,12 +7,11 @@ const QRs = require('../../schemas/schemas.js').qr;
 
 module.exports.getQRByQuestionID = function (req, res) {
     const id = req.params.id;
-    const type = req.params.type;
 
-    if ((id.length != 12 && id.length != 24) || !type) {
+    if (id.length != 12 && id.length != 24) {
         return res.status(400).json({msg: "Invalid parameters"})
     } else {
-        QRs.findOne().and([{obj_id: id}, {type: type}]).then(qr => {
+        QRs.findOne().where('_id').in(id).then(qr => {
             if (qr) {
                 res.write(qr.img);
                 res.end();
@@ -35,10 +34,13 @@ module.exports.postNewQrCode = function (req, res) {
         if (qr) {
             return res.status(409).json({msg: 'Conflict, Resource already exists'});
         } else {
+            const _id = mongoose.Types.ObjectId();
+            
             let qr = new QRs({
+                _id: _id,
                 obj_id: mongoose.Types.ObjectId.createFromHexString(id),
                 type: type,
-                img: QR_gen.imageSync(id)
+                img: QR_gen.imageSync(_id.toString())
             })
             qr.save((err, doc) => {
                 if (!err) {
