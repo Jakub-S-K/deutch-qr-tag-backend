@@ -1,13 +1,13 @@
 require('mongoose');
 const Users = require('../../schemas/schemas.js').users;
-const qr = require('./qr.js');
+const Qr = require('./qr.js');
 
 module.exports.post = function (req, res) {
     if (req.body.name && req.body.surname) {
         let user = new Users({name: req.body.name, surname: req.body.surname});
         user.save((err, doc) => {
             if (!err) {
-                qr.createQR(doc._id.toHexString(), 'user').then(code =>{
+                Qr.createQR(doc._id.toHexString(), 'user').then(code =>{
                     switch (code) {
                         case 200:
                             return res.json({_id: doc._id});
@@ -53,7 +53,18 @@ module.exports.delete = function(req, res) {
     
     Users.deleteOne().where('_id').in(id).then(result => {
         if (result.deletedCount != 0) {
-            res.sendStatus(200);
+            Qr.deleteQRbyForeignID(id, 'user').then(code => {
+                switch(code) {
+                    case 200:
+                        return res.sendStatus(200);
+                    case 404:
+                        return res.sendStatus(404);
+                    case 400:
+                        return res.sendStatus(400);
+                    default:
+                        return res.sendStatus(500);
+                }
+            })
         } else {
             res.sendStatus(404);
         }
