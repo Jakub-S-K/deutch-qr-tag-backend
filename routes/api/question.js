@@ -38,7 +38,6 @@ module.exports.patchQuestion = function (req, res) {
     if (id.length != 24) {
         return res.sendStatus(400);
     }
-    Question.updateOne()
     Question.findByIdAndUpdate(id, req.body, function (err, data) {
         if (err) {
             console.log(err);
