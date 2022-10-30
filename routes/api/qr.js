@@ -42,18 +42,18 @@ module.exports.getQRByID = function (req, res) {
 
 module.exports.postNewQrCode = function (req, res) {
     if (!req.body.obj_id || !req.body.type) {
-        return res.status(400).json({msg: "Invalid request format"});
+        return res.sendStatus(400);
     }
     const id = req.body.obj_id;
     const type = req.body.type;
     createQRCodeAndSaveToDB(id, type).then( code => {
         switch (code) {
             case 200:
-                return res.json({msg: 'Ok'});
+                return res.sendStatus(200);
             case 409:
-                return res.status(409).json({msg: 'Conflict, Resource already exists'});
+                return res.sendStatus(409);
             case 500:
-                return res.status(500).json({msg: 'Internal server error'});
+                return res.sendStatus(500);
             default:
                 break;
             }
