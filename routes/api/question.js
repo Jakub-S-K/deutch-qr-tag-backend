@@ -66,3 +66,18 @@ module.exports.getQuestion = function (req, res) {
         }
     })
 }
+
+module.exports.deleteQuestion = function (req, res) {
+    const id = req.params.id;
+    if (id.length != 24) {
+        return res.sendStatus(400);
+    }
+
+    Question.deleteOne().where('_id').in(id).then(result => {
+        if (result.deletedCount != 0) {
+            res.sendStatus(200);
+        } else {
+            res.sendStatus(404);
+        }
+    })
+}

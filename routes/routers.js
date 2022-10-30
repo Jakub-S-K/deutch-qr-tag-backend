@@ -30,6 +30,7 @@ module.exports = function (app) {
     router.post('/question', passport.authenticate('jwt', {session: false}), question.postQuestion);
     router.patch('/question/:id', passport.authenticate('jwt', {session: false}), question.patchQuestion);
     router.get('/question/:id', passport.authenticate('jwt', {session: false}), question.getQuestion);
+    router.delete('/question/:id', passport.authenticate('jwt', {session: false}), question.deleteQuestion);
 
     router.get('/questions', passport.authenticate('jwt', {session: false}), questions.getQuestions);
 
