@@ -81,7 +81,7 @@ module.exports.getQuestion = function (req, res) {
     })
 }
 
-module.exports.deleteQuestion = function (req, res) {
+module.exports.deleteQuestion = async function (req, res) {
     const id = req.params.id;
     if (id.length != 24) {
         return res.sendStatus(400);
@@ -89,9 +89,20 @@ module.exports.deleteQuestion = function (req, res) {
 
     Question.deleteOne().where('_id').in(id).then(result => {
         if (result.deletedCount != 0) {
-            res.sendStatus(200);
+            Qr.deleteQRbyForeignID(id, 'question').then(code => {
+                switch(code) {
+                    case 200:
+                        return res.sendStatus(200);
+                    case 404:
+                        return res.sendStatus(404);
+                    case 400:
+                        return res.sendStatus(400);
+                    default:
+                        return res.sendStatus(500);
+                }
+            })
         } else {
-            res.sendStatus(404);
+            return res.sendStatus(404);
         }
     })
 }

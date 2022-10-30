@@ -87,4 +87,40 @@ function createQRCodeAndSaveToDB(obj_id, type) {
     
 }
 
+function deleteQRbyForeignID(id, type) {
+    return new Promise(resolve => {
+        if (id.length != 24) {
+            resolve(400);
+        }
+    
+        QRs.deleteOne()
+        .and([{obj_id: id}, {type: type}])        
+        .then(result => {
+            if (result.deletedCount > 0) {
+                resolve(200);
+            } else {
+                resolve(404);
+            }
+        })
+    })
+}
+
+function deleteQR(id) {
+    return new Promise(resolve => {
+        if (id.length != 24) {
+            resolve(400);
+        }
+    
+        QRs.deleteOne().where('_id').in(id).then(result => {
+            if (result.deletedCount > 0) {
+                resolve(200);
+            } else {
+                resolve(404);
+            }
+        })
+    })
+}
+
+module.exports.deleteQRbyForeignID = deleteQRbyForeignID;
+module.exports.deleteQR = deleteQR;
 module.exports.createQR = createQRCodeAndSaveToDB;
