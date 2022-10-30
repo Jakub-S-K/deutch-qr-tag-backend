@@ -42,7 +42,8 @@ module.exports.post_login = function (req, res) {
             if (err) 
                 throw err
             switch (result) {
-                case securePassword.INVALID: res.status(400).json({message: "Password did not match"});
+                case securePassword.INVALID: 
+                    res.status(400).json({message: "Password did not match"});
                     return console.log('Invalid password attempt')
 
                 case securePassword.VALID:
