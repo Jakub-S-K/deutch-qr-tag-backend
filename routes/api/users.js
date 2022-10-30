@@ -6,7 +6,7 @@ module.exports.get = function(req, res) {
         if (users) {
             res.json(users)
         } else {
-            res.status(404).json({message: "There are no users"})
+            res.sendStatus(404);
         }
     });
 }
