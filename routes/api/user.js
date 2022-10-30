@@ -10,25 +10,23 @@ module.exports.post = function (req, res) {
                 qr.createQR(doc._id.toHexString(), 'user').then(code =>{
                     switch (code) {
                         case 200:
-                            return res.json({msg: 'ok', _id: doc._id});
+                            return res.json({_id: doc._id});
                         case 409:
-                            return res.status(409).json({msg: 'User created, but there\'s conflict with qr code'});
+                            return res.sendStatus(409)
                         case 500:
-                            return res.status(500).json({msg: 'Internal server error while saving qr code'});
+                            return res.sendStatus(500);
                         default:
                             break;
                         }
                 })
             } else {
                 console.log('Unexpected error ocurred /api/add/user database populate');
-                res.status(500).json({msg: 'Interval server error'})
+                res.sendStatus(500);
             }
         })
 
     } else {
-        console.log(req.name);
-        console.log(req.surname);
-        res.status(400).json({msg: 'Invalid request format'});
+        res.sendStatus(400);
     } 
 }
 
@@ -42,7 +40,7 @@ module.exports.get = function (req, res) {
         if (user) {
             res.json(user)
         } else {
-            res.status(404).json({msg: "User with given id doesn't exist"})
+            res.sendStatus(404);
         }
     }); 
 }
@@ -50,17 +48,14 @@ module.exports.get = function (req, res) {
 module.exports.delete = function(req, res) {
     const id = req.params.id;
     if (id.length != 12 && id.length != 24) {
-        res.status(400).json({msg: "Invalid Id format"})
+        res.sendStatus(400)
     }
-    Users.findByIdAndDelete(id, function (err, docs) {
-        if (err) {
-            console.log(err);
+    
+    Users.deleteOne().where('_id').in(id).then(result => {
+        if (result.deletedCount != 0) {
+            res.sendStatus(200);
         } else {
-            if (! docs) { // console.log('Resource not found');
-                res.status(406).json({msg: "Resource not found"});
-            } else { // console.log("Deleted :", docs);
-                res.status(200).json({msg: 'Ok'});
-            }
+            res.sendStatus(404);
         }
     })
 }
@@ -68,14 +63,15 @@ module.exports.delete = function(req, res) {
 module.exports.patch = function(req, res) {
     const id = req.params.id
     if (id.length != 12 && id.length != 24) {
-        return res.status(400).json({msg: "Invalid Id format"});
+        return res.sendStatus(400);
     }
 
     Users.findByIdAndUpdate(id, req.body, function (err, data) {
         if (err) {
             console.log(err);
+            res.sendStatus(500);
         } else {
-            res.json({msg: 'ok'})
+            res.sendStatus(200);
         }
     })
 }
