@@ -9,11 +9,11 @@ module.exports = function(app, io) {
     
     function post_broadcast_msg (req, res) {
         if (!req.body.message) {
-            res.status(400).json({msg: 'Invalid request format'});
+            res.sendStatus(400);
             return;
         }
         if (socket_connected_users == 0) {
-            res.status(404).json({msg: 'There are no connected clients'})
+            res.sendStatus(404)
             return
         }
         io.emit('msg', req.body.message);
