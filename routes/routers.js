@@ -3,6 +3,7 @@ const user = require('./api/user.js');
 const users = require('./api/users.js');
 const auth = require('./api/auth.js');
 const qr = require('./api/qr.js');
+const question = require('./api/question.js');
 
 var passport = require('passport');
 
@@ -24,6 +25,8 @@ module.exports = function (app) {
     router.post('/qr', passport.authenticate('jwt', {session: false}), qr.postNewQrCode);
     router.get('/qr/:type/:id', passport.authenticate('jwt', {session: false}), qr.getQRByObjectIdAndType);
     router.get('/qr/:id', passport.authenticate('jwt', {session: false}), qr.getQRByID);
+
+    router.post('/question', passport.authenticate('jwt', {session: false}), question.postQuestion);
 
     router.post('/login', auth.post_login);
 
