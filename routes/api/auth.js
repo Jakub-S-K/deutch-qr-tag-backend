@@ -29,12 +29,12 @@ passport.use(this.strategy);
 
 module.exports.post_login = function (req, res) {
     if (!req.body.username || !req.body.password ) {
-        res.status(400).json({message: "Invalid data format"});
+        res.sendStatus(400);
         return;
     }
     const admin = Admins.findOne().where('login'). in (req.body.username).then(user => {
         if (!user) {
-            res.status(404).json({message: "There is no such a user"});
+            res.sendStatus(404);
         }
         var password = Buffer.from(req.body.password);
 
@@ -43,7 +43,7 @@ module.exports.post_login = function (req, res) {
                 throw err
             switch (result) {
                 case securePassword.INVALID: 
-                    res.status(400).json({message: "Password did not match"});
+                    res.sendStatus(400);
                     return console.log('Invalid password attempt')
 
                 case securePassword.VALID:
@@ -54,7 +54,7 @@ module.exports.post_login = function (req, res) {
                     };
 
                     var token = jwt.sign(payload, jwtOptions.secretOrKey);
-                    res.json({message: "ok", token: token});
+                    res.json({token: token});
                     return console.log('Authenticated')
                 default:
                     console.log("Password error switch default has been reached");
@@ -65,5 +65,5 @@ module.exports.post_login = function (req, res) {
 }
 
 module.exports.get_access_test = function (req, res) {
-    res.json({message: "Success! You can not see this without a token"});
+    res.sendStatus(200);
 }
