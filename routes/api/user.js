@@ -71,7 +71,11 @@ module.exports.patch = function(req, res) {
             console.log(err);
             res.sendStatus(500);
         } else {
-            res.sendStatus(200);
+            if (data){
+                res.sendStatus(200);
+            } else {
+                res.sendStatus(404);
+            }
         }
     })
 }
