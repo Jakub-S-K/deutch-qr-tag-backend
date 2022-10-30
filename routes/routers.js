@@ -28,6 +28,7 @@ module.exports = function (app) {
 
     router.post('/question', passport.authenticate('jwt', {session: false}), question.postQuestion);
     router.patch('/question/:id', passport.authenticate('jwt', {session: false}), question.patchQuestion);
+    router.get('/question/:id', passport.authenticate('jwt', {session: false}), question.getQuestion);
 
     router.post('/login', auth.post_login);
 

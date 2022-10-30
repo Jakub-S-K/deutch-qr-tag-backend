@@ -51,3 +51,18 @@ module.exports.patchQuestion = function (req, res) {
         }
     })
 }
+
+module.exports.getQuestion = function (req, res) {
+    const id = req.params.id;
+    if (id.length != 24) {
+        return res.sendStatus(400);
+    }
+    
+    Question.findOne().where('_id').in(id).then(question => {
+        if (question) {
+            return res.json(question);
+        } else {
+            return res.sendStatus(404);
+        }
+    })
+}
