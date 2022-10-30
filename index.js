@@ -4,7 +4,6 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-const Users = require('./schemas/schemas.js').users;
 
 var bodyParser = require("body-parser");
 
@@ -29,7 +28,6 @@ const password = encodeURIComponent(process.env.DB_USR_PASS);
 const cluster = process.env.DB_CLUSTER;
 const database = process.env.DB_NAME;
 
-var GlobalStatus = true
 
 let uri = `mongodb+srv://${username}:${password}@${cluster}/${database}`;
 
@@ -53,15 +51,6 @@ if (process.env.LE_URL && process.env.LE_CONTENT) {
 require('./routes/routers.js')(app);
 require('./routes/old_routes.js')(app);
 require('./routes/socket.js')(app, io);
-
-router.post('/settings', (req, res) => {
-    if (req.body.status && req.body.auth == process.env.AUTH_KEY) {
-        GlobalStatus = req.body.status; // Turn off sending answers
-    } else {
-        res.json({ok: false});
-    }
-    res.json({ok: true})
-});
 
 app.use('/', router);
 
