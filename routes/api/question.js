@@ -24,11 +24,31 @@ module.exports.postQuestion = function(req, res) {
                 answer: answer
             }).save((err, doc) => {
                 if (!err) {
-                    res.sendStatus(200);
+                    res.json({_id: doc._id});
                 } else {
                     res.sendStatus(500);
                 }
             })
+        }
+    })
+}
+
+module.exports.patchQuestion = function (req, res) {
+    const id = req.params.id;
+    if (id.length != 24) {
+        return res.sendStatus(400);
+    }
+    Question.updateOne()
+    Question.findByIdAndUpdate(id, req.body, function (err, data) {
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        } else {
+            if (data) {
+                res.sendStatus(200);
+            } else {
+                res.sendStatus(404);
+            }
         }
     })
 }
