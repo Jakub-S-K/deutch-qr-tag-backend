@@ -1,12 +1,24 @@
 require('mongoose');
 const Users = require('../../schemas/schemas.js').users;
+const qr = require('./qr.js');
 
 module.exports.post = function (req, res) {
     if (req.body.name && req.body.surname) {
         let user = new Users({name: req.body.name, surname: req.body.surname});
         user.save((err, doc) => {
             if (!err) {
-                res.json({msg: 'ok', _id: doc._id});
+                qr.createQR(doc._id.toHexString(), 'user').then(code =>{
+                    switch (code) {
+                        case 200:
+                            return res.json({msg: 'ok', _id: doc._id});
+                        case 409:
+                            return res.status(409).json({msg: 'User created, but there\'s conflict with qr code'});
+                        case 500:
+                            return res.status(500).json({msg: 'Internal server error while saving qr code'});
+                        default:
+                            break;
+                        }
+                })
             } else {
                 console.log('Unexpected error ocurred /api/add/user database populate');
                 res.status(500).json({msg: 'Interval server error'})

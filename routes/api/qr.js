@@ -46,26 +46,45 @@ module.exports.postNewQrCode = function (req, res) {
     }
     const id = req.body.obj_id;
     const type = req.body.type;
-
-    QRs.findOne().and([{obj_id: id}, {type: type}])
-    .then(qr => {
-        if (qr) {
-            return res.status(409).json({msg: 'Conflict, Resource already exists'});
-        } else {
-            const _id = mongoose.Types.ObjectId();
-            
-            let qr = new QRs({
-                _id: _id,
-                obj_id: mongoose.Types.ObjectId.createFromHexString(id),
-                type: type,
-                img: QR_gen.imageSync(_id.toString())
-            })
-            qr.save((err, doc) => {
-                if (!err) {
-                    return res.json({msg: 'Ok'})
-                }
-                return res.status(500).json({msg: 'Internal server error'})
-            })
-        }
-    })
+    createQRCodeAndSaveToDB(id, type).then( code => {
+        switch (code) {
+            case 200:
+                return res.json({msg: 'Ok'});
+            case 409:
+                return res.status(409).json({msg: 'Conflict, Resource already exists'});
+            case 500:
+                return res.status(500).json({msg: 'Internal server error'});
+            default:
+                break;
+            }
+    });
 }
+
+function createQRCodeAndSaveToDB(obj_id, type) {
+    const id = obj_id;
+    return new Promise(resolve => {
+        QRs.findOne().and([{obj_id: id}, {type: type}])
+        .then(qr => {
+            if (qr) {
+                resolve(409);
+            } else {
+                const _id = mongoose.Types.ObjectId();
+                let qr = new QRs({
+                    _id: _id,
+                    obj_id: mongoose.Types.ObjectId.createFromHexString(id),
+                    type: type,
+                    img: QR_gen.imageSync(_id.toString())
+                })
+                qr.save((err, doc) => {
+                    if (!err) {
+                        resolve(200);
+                    }
+                    resolve(500);
+                })
+            }
+        })
+    });
+    
+}
+
+module.exports.createQR = createQRCodeAndSaveToDB;
