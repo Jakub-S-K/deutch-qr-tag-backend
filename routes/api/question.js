@@ -1,18 +1,20 @@
 const Question = require('../../schemas/schemas.js').questions;
+const Qr = require('./qr.js');
 
 module.exports.postQuestion = function(req, res) {
-    const question = req.body.question;
-    const a = req.body.a;
-    const b = req.body.b;
-    const c = req.body.c;
-    const d = req.body.d;
-    const answer = req.body.answer;
+    let question = req.body.question;
+    let a = req.body.a;
+    let b = req.body.b;
+    let c = req.body.c;
+    let d = req.body.d;
+    let answer = req.body.answer;
 
     if (!question || !a || !b || !c || !d || !answer) {
         return res.sendStatus(400);
     }
-    Question.findOne().where('question').in(question).then(question => {
-        if (question) {
+    
+    Question.findOne().where('question').in(question).then(result => {
+        if (result) {
             res.sendStatus(409);
         } else {
             new Question({
@@ -24,7 +26,19 @@ module.exports.postQuestion = function(req, res) {
                 answer: answer
             }).save((err, doc) => {
                 if (!err) {
-                    res.json({_id: doc._id});
+                    Qr.createQR(doc._id.toHexString(), 'question').then(status => {
+                        switch(status) {
+                            case 200:
+                                res.json({_id: doc._id});
+                                break;
+                            case 409:
+                                return res.sendStatus(409)
+                            case 500:
+                                return res.sendStatus(500);
+                            default:
+                                break;
+                        }
+                    })
                 } else {
                     res.sendStatus(500);
                 }
