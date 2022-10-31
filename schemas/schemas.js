@@ -35,9 +35,15 @@ const Answers = mongoose.model('answers', mongoose.Schema({
     answer: String 
 }));
 
+const Options = mongoose.model('options', mongoose.Schema({
+    name: String,
+    value: String
+}))
+
 
 module.exports.admins = Admins;
 module.exports.users = Users;
 module.exports.questions = Questions;
 module.exports.answers = Answers;
 module.exports.qr = QR;
+module.exports.options = Options;

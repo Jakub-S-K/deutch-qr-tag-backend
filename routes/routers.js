@@ -5,6 +5,7 @@ const auth = require('./api/auth.js');
 const qr = require('./api/qr.js');
 const question = require('./api/question.js');
 const questions = require('./api/questions.js');
+const options = require('./api/options.js');
 
 var passport = require('passport');
 
@@ -33,6 +34,9 @@ module.exports = function (app) {
     router.delete('/question/:id', passport.authenticate('jwt', {session: false}), question.deleteQuestion);
 
     router.get('/questions', passport.authenticate('jwt', {session: false}), questions.getQuestions);
+
+    router.get('/options', passport.authenticate('jwt', {session: false}), options.getOptions);
+    router.patch('/options', passport.authenticate('jwt', {session: false}), options.patchOptions);
 
     router.post('/login', auth.post_login);
 
