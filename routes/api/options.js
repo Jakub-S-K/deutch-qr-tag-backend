@@ -18,7 +18,6 @@ module.exports.patchOptions = function (req, res) {
     const dbTransactions = [];
 
     Object.entries(req.body).forEach(([key, value]) => {
-        console.log('element: ', key, value);
         dbTransactions.push(new Promise(resolve => {
             Options.updateOne({ name: key }, { value: value }, function (err, result) {
                 if (err) {
