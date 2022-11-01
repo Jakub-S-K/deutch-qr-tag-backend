@@ -2,8 +2,13 @@ const Options = require('../../schemas/schemas.js').options;
 
 module.exports.getOptions = function (req, res) {
     Options.find().then(result => {
-        if (result.length > 0) {
-            res.json(result);
+        const size = result.length;
+        if (size > 0) {
+            const list = [];
+            for (let i = 0; i < size; i++){
+                list.push([result[i].name, result[i].value]);
+            }
+            res.status(200).json(Object.fromEntries(list));
         } else {
             res.sendStatus(404);
         }
