@@ -39,13 +39,15 @@ module.exports.patchTeam = async function (req, res) {
     if(req.body.name) {
         team.name = req.body.name;
     }
-    Teams.findByIdAndUpdate(id, team, function (err, data) {
+    if (Object.keys(team).length === 0) {
+        return res.sendStatus(400);
+    }
+    Teams.updateOne({_id: id}, team, function (err, result) {
         if (err) {
             console.log(err);
             res.sendStatus(500);
         } else {
-            if (data){
-                console.log(data);
+            if (result.matchedCount > 0){
                 res.sendStatus(200);
             } else {
                 res.sendStatus(404);

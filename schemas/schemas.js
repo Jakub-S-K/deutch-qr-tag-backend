@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-const Admins = mongoose.model('admins', mongoose.Schema({ 
-    login: String, 
-    password: Buffer 
+const Admins = mongoose.model('admins', mongoose.Schema({
+    login: String,
+    password: Buffer
 }));
 const QR = mongoose.model('qrs', mongoose.Schema({
     type: {
@@ -14,9 +14,9 @@ const QR = mongoose.model('qrs', mongoose.Schema({
     img: Buffer
 }))
 
-const Users = mongoose.model('users', mongoose.Schema({ 
-    name: String, 
-    surname: String 
+const Users = mongoose.model('users', mongoose.Schema({
+    name: String,
+    surname: String
 }));
 
 const Questions = mongoose.model('questions', mongoose.Schema({
@@ -29,11 +29,16 @@ const Questions = mongoose.model('questions', mongoose.Schema({
     answer: String
 }));
 
-const Answers = mongoose.model('answers', mongoose.Schema({ 
-    hash: String, 
-    qr_id: String, 
-    answer: String 
+const Answers = mongoose.model('answers', mongoose.Schema({
+    hash: String,
+    qr_id: String,
+    answer: String
 }));
+
+const Teams = mongoose.model('teams', mongoose.Schema({
+    name: String,
+    members: [{ type: mongoose.Schema.ObjectId, required: true, ref: 'users' }]
+}))
 
 const Options = mongoose.model('options', mongoose.Schema({
     name: String,
@@ -47,3 +52,4 @@ module.exports.questions = Questions;
 module.exports.answers = Answers;
 module.exports.qr = QR;
 module.exports.options = Options;
+module.exports.teams = Teams;

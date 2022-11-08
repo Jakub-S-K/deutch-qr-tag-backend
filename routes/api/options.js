@@ -29,6 +29,7 @@ module.exports.patchOptions = function (req, res) {
                     console.log('error', err);
                     resolve(400);
                 } else {
+                    console.log(result);
                     if (result.acknowledged && result.matchedCount > 0) {
                         resolve(200);
                     } else {

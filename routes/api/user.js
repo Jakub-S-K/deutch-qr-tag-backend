@@ -12,7 +12,7 @@ module.exports.post = function (req, res) {
                         case 200:
                             return res.json({_id: doc._id});
                         case 409:
-                            return res.sendStatus(409)
+                            return res.sendStatus(409);
                         case 500:
                             return res.sendStatus(500);
                         default:
