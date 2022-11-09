@@ -6,7 +6,8 @@ const qr = require('./api/qr.js');
 const question = require('./api/question.js');
 const questions = require('./api/questions.js');
 const options = require('./api/options.js');
-const teams = require('./api/team.js');
+const team = require('./api/team.js');
+const teams = require('./api/teams.js');
 
 var passport = require('passport');
 
@@ -41,9 +42,12 @@ module.exports = function (app) {
 
     router.post('/login', auth.post_login);
 
-    router.post('/team', passport.authenticate('jwt', {session: false}), teams.postTeam);
-    router.patch('/team/:id', passport.authenticate('jwt', {session: false}), teams.patchTeam);
-    router.get('/team/:id', passport.authenticate('jwt', {session: false}), teams.getTeam);
+    router.post('/team', passport.authenticate('jwt', {session: false}), team.postTeam);
+    router.patch('/team/:id', passport.authenticate('jwt', {session: false}), team.patchTeam);
+    router.get('/team/:id', passport.authenticate('jwt', {session: false}), team.getTeam);
+    
+    router.get('/teams', passport.authenticate('jwt', {session: false}), teams.getTeams);
+
     //There are some /api routes in socket.js
     
     app.use('/api', router);
