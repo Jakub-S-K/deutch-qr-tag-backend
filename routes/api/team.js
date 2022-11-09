@@ -72,3 +72,18 @@ module.exports.getTeam = function (req, res) {
         }
     })
 }
+
+module.exports.deleteTeam = function (req, res) {
+    if(!req.params.id || req.params.id.length != 24) {
+        return res.sendStatus(400);
+    }
+    const id = req.params.id;
+    
+    Teams.deleteOne({_id: id}).then(result => {
+        if (result.deletedCount == 0) {
+            return res.sendStatus(404);
+        } else {
+            return res.sendStatus(200);
+        }
+    })
+}

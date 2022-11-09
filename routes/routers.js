@@ -45,6 +45,7 @@ module.exports = function (app) {
     router.post('/team', passport.authenticate('jwt', {session: false}), team.postTeam);
     router.patch('/team/:id', passport.authenticate('jwt', {session: false}), team.patchTeam);
     router.get('/team/:id', passport.authenticate('jwt', {session: false}), team.getTeam);
+    router.delete('/team/:id', passport.authenticate('jwt', {session: false}), team.deleteTeam);
     
     router.get('/teams', passport.authenticate('jwt', {session: false}), teams.getTeams);
 
