@@ -34,7 +34,7 @@ module.exports.patchTeam = async function (req, res) {
         if (!Array.isArray(req.body.members)) {
             return res.sendStatus(400);
         }
-        team.members = req.body.members;
+        team.members = [...new Set(req.body.members)];
     }
     if(req.body.name) {
         team.name = req.body.name;
@@ -62,12 +62,11 @@ module.exports.getTeam = function (req, res) {
     }
     const id = req.params.id;
 
-    Teams.findById(id).then(team => {
+    Teams.findById(id, '-_id -__v').then(team => {
         if (team) {
-            team.populate('members').then(populated => {
-                console.log(populated);
+            team.populate({path: 'members', select: '-__v'}).then(populated => {
+                return res.json(populated);
             })
-            return res.sendStatus(200);
         } else {
             return res.sendStatus(404);
         }
