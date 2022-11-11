@@ -41,6 +41,7 @@ module.exports = function (app) {
     router.patch('/options', passport.authenticate('jwt', {session: false}), options.patchOptions);
 
     router.post('/login', auth.post_login);
+    router.get('/renew',  passport.authenticate('jwt', {session: false}), auth.get_renew);
 
     router.post('/team', passport.authenticate('jwt', {session: false}), team.postTeam);
     router.patch('/team/:id', passport.authenticate('jwt', {session: false}), team.patchTeam);

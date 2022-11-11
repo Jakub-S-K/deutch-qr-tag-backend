@@ -65,6 +65,16 @@ module.exports.post_login = function (req, res) {
     })
 }
 
+module.exports.get_renew = function(req, res) {
+    var payload = {
+        id: req.user._id,
+        exp: Math.floor(Date.now() / 1000) + (60 * 120)
+    };
+
+    var token = jwt.sign(payload, jwtOptions.secretOrKey);
+    res.json({ token: token, expiresIn: 60*120 });
+}
+
 module.exports.get_access_test = function (req, res) {
     res.sendStatus(200);
 }
