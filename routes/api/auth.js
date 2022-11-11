@@ -54,7 +54,7 @@ module.exports.post_login = function (req, res) {
                         };
 
                         var token = jwt.sign(payload, jwtOptions.secretOrKey);
-                        res.json({ token: token });
+                        res.json({ token: token, expiresIn: 60*120 });
                         return console.log('Authenticated')
                     default:
                         console.log("Password error switch default has been reached");
