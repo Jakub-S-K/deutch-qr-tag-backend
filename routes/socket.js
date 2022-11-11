@@ -27,7 +27,7 @@ module.exports = function(app, io) {
     function register_socket (io) {
 
         io.use(function(socket, next){
-            const id = JSON.parse(socket.handshake.query.id);
+            const id = socket.handshake.query.id;
             if (id.length != 24 && id.length != 12) {
                 next(new Error('invalid id'));
             } else {
