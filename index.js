@@ -4,10 +4,11 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-
 var bodyParser = require("body-parser");
 
 require('dotenv').config();
+
+const db = require('./mongoConn.js');
 
 const limiter = rateLimit.rateLimit({
     windowMs: 10 * 60 * 1000, // 15 minutes
@@ -22,19 +23,6 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {path: '/socket'});
 
 const router = express.Router();
-
-const username = encodeURIComponent(process.env.DB_USR_LOGIN);
-const password = encodeURIComponent(process.env.DB_USR_PASS);
-const cluster = process.env.DB_CLUSTER;
-const database = process.env.DB_NAME;
-
-
-let uri = `mongodb+srv://${username}:${password}@${cluster}/${database}`;
-
-mongoose.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
 
 app.use(limiter);
 app.set('trust proxy', 1);
