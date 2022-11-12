@@ -2,27 +2,26 @@ const Question = require('../../schemas/schemas.js').questions;
 const Qr = require('./qr.js');
 
 module.exports.postQuestion = function(req, res) {
-    let question = req.body.question;
-    let a = req.body.a;
-    let b = req.body.b;
-    let c = req.body.c;
-    let d = req.body.d;
-    let answer = req.body.answer;
 
-    if (!question || !a || !b || !c || !d || !answer) {
+    let question = req.body.question;
+    let answers = req.body.answers;
+    let answer = req.body.answer;
+    
+    if (!question || !answer) {
         return res.sendStatus(400);
     }
-    
+
+    if (!Array.isArray(answers)) {
+        return res.sendStatus(400);
+    }
+
     Question.findOne().where('question').in(question).then(result => {
         if (result) {
             res.sendStatus(409);
         } else {
             new Question({
                 question: question,
-                a: a,
-                b: b,
-                c: c,
-                d: d,
+                answers: answers,
                 answer: answer
             }).save((err, doc) => {
                 if (!err) {
@@ -52,6 +51,7 @@ module.exports.patchQuestion = function (req, res) {
     if (id.length != 24) {
         return res.sendStatus(400);
     }
+
     Question.findByIdAndUpdate(id, req.body, function (err, data) {
         if (err) {
             console.log(err);
@@ -72,7 +72,7 @@ module.exports.getQuestion = function (req, res) {
         return res.sendStatus(400);
     }
     
-    Question.findOne().where('_id').in(id).then(question => {
+    Question.findOne().where('_id').in(id).select('-__v -_id').then(question => {
         if (question) {
             return res.json(question);
         } else {
