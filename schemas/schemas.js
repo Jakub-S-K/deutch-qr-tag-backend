@@ -22,11 +22,8 @@ const Users = mongoose.model('users', mongoose.Schema({
 const Questions = mongoose.model('questions', mongoose.Schema({
     qr_id: String,
     question: String,
-    a: String,
-    b: String,
-    c: String,
-    d: String,
-    answer: String
+    answers: [String],
+    answer: [Number]
 }));
 
 const Answers = mongoose.model('answers', mongoose.Schema({
