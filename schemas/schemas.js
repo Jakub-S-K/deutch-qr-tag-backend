@@ -38,8 +38,12 @@ const Teams = mongoose.model('teams', mongoose.Schema({
 }))
 
 const Options = mongoose.model('options', mongoose.Schema({
-    name: String,
-    value: String
+    admin_id: {
+        type: mongoose.Schema.ObjectId,
+        require: true,
+        ref: 'admins'
+    },
+    options: [{name: String, value: String}]
 }))
 
 

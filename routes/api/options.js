@@ -1,12 +1,12 @@
 const Options = require('../../schemas/schemas.js').options;
 
 module.exports.getOptions = function (req, res) {
-    Options.find().then(result => {
-        const size = result.length;
+    Options.findOne().then(result => {
+        const size = result.options.length;
         if (size > 0) {
             const list = [];
             for (let i = 0; i < size; i++){
-                list.push([result[i].name, result[i].value]);
+                list.push([result.options[i].name, result.options[i].value]);
             }
             res.status(200).json(Object.fromEntries(list));
         } else {
@@ -15,42 +15,23 @@ module.exports.getOptions = function (req, res) {
     })
 }
 
-module.exports.patchOptions = function (req, res) {
+module.exports.patchOptions = async function (req, res) {
     if (Object.keys(req.body).length === 0 || Array.isArray(req.body)) {
         return res.sendStatus(400);
     }
-
-    const dbTransactions = [];
+    const obj = [];
 
     Object.entries(req.body).forEach(([key, value]) => {
-        dbTransactions.push(new Promise(resolve => {
-            Options.updateOne({ name: key }, { value: value }, function (err, result) {
-                if (err) {
-                    console.log('error', err);
-                    resolve(400);
-                } else {
-                    console.log(result);
-                    if (result.acknowledged && result.matchedCount > 0) {
-                        resolve(200);
-                    } else {
-                        resolve(404);
-                    }
-                }
-            })
-        }))
+        obj.push({name: key, value: value});
     });
-    Promise.all(dbTransactions).then(result => {
-            const status = result.every(code => {
-                if (code !== 200) {
-                    res.sendStatus(code);
-                    return false;
-                } else {
-                    return true;
-                }
-            })
-            if (status) {
-                return res.sendStatus(200);
-            }
-        }
-    )
+
+    const result = await Options.updateOne({admin_id: req.user._id}, {options: obj}, { upsert: true });
+    console.log(result);
+    if (result.matchedCount > 0) {
+        return res.sendStatus(200);
+    } else if(result.upsertedCount > 0) {
+        return res.sendStatus(201);
+    } else {
+        return res.sendStatus(404);
+    }
 }
