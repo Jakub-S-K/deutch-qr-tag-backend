@@ -7,17 +7,30 @@ module.exports.postQuestion = function(req, res) {
     let answers = req.body.answers;
     let answer = req.body.answer;
     
-    if (!question || !answer) {
+    if (!question || answer === null || answer === undefined) {
         return res.sendStatus(400);
     }
 
     if (!Array.isArray(answers)) {
+        console.log('fumu');
+        return res.sendStatus(400);
+    }
+    
+    const isNull = answers.every(answer => {
+        if (answer === null) {
+            return false
+        }
+        return true;
+    })
+
+    if (isNull) {
         return res.sendStatus(400);
     }
 
     Question.findOne().where('question').in(question).then(result => {
         if (result) {
-            res.sendStatus(409);
+            console.log(result);
+            return res.sendStatus(409);
         } else {
             new Question({
                 question: question,
@@ -39,7 +52,7 @@ module.exports.postQuestion = function(req, res) {
                         }
                     })
                 } else {
-                    res.sendStatus(500);
+                    return res.sendStatus(500);
                 }
             })
         }
