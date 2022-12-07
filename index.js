@@ -11,8 +11,8 @@ require('dotenv').config();
 const db = require('./mongoConn.js');
 
 const limiter = rateLimit.rateLimit({
-    windowMs: 10 * 60 * 1000, // 15 minutes
-    max: 6000, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    max: 6000, // Limit each IP to 6000 requests per `window` (here, per 15 minutes)
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 })
