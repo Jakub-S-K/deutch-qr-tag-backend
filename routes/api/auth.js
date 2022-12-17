@@ -50,11 +50,11 @@ module.exports.post_login = function (req, res) {
 
                         var payload = {
                             id: user._id,
-                            exp: Math.floor(Date.now() / 1000) + (60 * 120)
+                            exp: Math.floor(Date.now() / 1000) + (60 * 10)
                         };
 
                         var token = jwt.sign(payload, jwtOptions.secretOrKey);
-                        res.json({ token: token, expiresIn: 60*120 });
+                        res.json({ token: token});
                         return console.log('Authenticated')
                     default:
                         console.log("Password error switch default has been reached");
@@ -72,7 +72,7 @@ module.exports.get_renew = function(req, res) {
     };
 
     var token = jwt.sign(payload, jwtOptions.secretOrKey);
-    res.json({ token: token, expiresIn: 60*120 });
+    res.json({ token: token});
 }
 
 module.exports.get_access_test = function (req, res) {
