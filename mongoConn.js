@@ -8,7 +8,7 @@ const database = process.env.DB_NAME;
 
 let uri = `mongodb+srv://${username}:${password}@${cluster}/${database}`;
 
-let db = mongoose.connect(uri, {
+let db = await mongoose.connect(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
