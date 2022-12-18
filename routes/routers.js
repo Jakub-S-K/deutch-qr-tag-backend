@@ -23,6 +23,7 @@ module.exports = function (app) {
     router.patch('/user/:id', passport.authenticate('jwt', {session: false}), user.patch);
 
     router.get('/users', passport.authenticate('jwt', {session: false}), users.get);
+    router.get('/users/free', passport.authenticate('jwt', {session: false}), users.getFree);
 
     router.post('/qr', passport.authenticate('jwt', {session: false}), qr.postNewQrCode);
     router.get('/qr/:type/:id', passport.authenticate('jwt', {session: false}), qr.getQRByObjectIdAndType);
