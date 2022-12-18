@@ -8,7 +8,7 @@ var bodyParser = require("body-parser");
 
 require('dotenv').config();
 
-const db = require('./mongoConn.js');
+const db = await require('./mongoConn.js');
 
 const limiter = rateLimit.rateLimit({
     windowMs: 10 * 60 * 1000, // 10 minutes
