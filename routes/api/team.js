@@ -4,11 +4,20 @@ module.exports.postTeam = function (req, res) {
     if (!req.body.name) {
         return res.sendStatus(400);
     }
+    const newTeam = {};
+
+    newTeam.name = req.body.name;
+
+    if(req.body.members) {
+        if (Array.isArray(req.body.members)) {
+            newTeam.members = [...new Set(req.body.members)];
+        }
+    }
 
     Teams.findOne({ name: req.body.name }).then(team => {
         if (!team) {
             new Teams({
-                name: req.body.name
+                ...newTeam
             }).save(err => {
                 if (err) {
                     return res.sendStatus(500);
