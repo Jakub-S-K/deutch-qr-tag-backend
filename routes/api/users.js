@@ -79,7 +79,7 @@ module.exports.getFree = function(req, res) {
         }
       ]).then(teams => {
         if (teams) {
-            return res.json(teams[0]);
+            return res.json(teams[0].users);
         } else {
             return res.sendStatus(404)
         }
