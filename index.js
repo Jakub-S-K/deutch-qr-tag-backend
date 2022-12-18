@@ -8,7 +8,7 @@ var bodyParser = require("body-parser");
 
 require('dotenv').config();
 
-const db = await require('./mongoConn.js');
+const db = require('./mongoConn.js').db;
 
 const limiter = rateLimit.rateLimit({
     windowMs: 10 * 60 * 1000, // 10 minutes
@@ -42,4 +42,10 @@ require('./routes/socket.js')(app, io);
 
 app.use('/', router);
 
-httpServer.listen(process.env.PORT, () => console.log("Server is running on PORT " + process.env.PORT))
+const db_rdy = require('./mongoConn.js').db_rdy().then(good => {
+    if (good) {
+        httpServer.listen(process.env.PORT, () => console.log("Server is running on PORT " + process.env.PORT))
+    } else {
+        console.error("Failed to connect to database");
+    }
+})

@@ -13,4 +13,17 @@ let db = mongoose.connect(uri, {
     useUnifiedTopology: true
 });
 
-module.export = db;
+module.exports.db = db;
+
+module.exports.db_rdy = function () {
+    return new Promise(resolve => {
+        var conn = mongoose.connection;
+        conn.on('error', function () {
+            resolve(false)
+            process.exit(1);
+        });
+        conn.once('open', function () {
+            resolve(true)
+        });
+    })
+}
