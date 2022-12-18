@@ -68,7 +68,7 @@ module.exports.post_login = function (req, res) {
 module.exports.get_renew = function(req, res) {
     var payload = {
         id: req.user._id,
-        exp: Math.floor(Date.now() / 1000) + (60 * 120)
+        exp: Math.floor(Date.now() / 1000) + (60 * 10)
     };
 
     var token = jwt.sign(payload, jwtOptions.secretOrKey);
