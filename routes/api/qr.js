@@ -12,7 +12,7 @@ module.exports.getQRByObjectIdAndType = function (req, res) {
     if ((id.length != 12 && id.length != 24) || !type) {
         return res.sendStatus(400);
     } else {
-        QRs.findOne({_admin: req.admin._id}).and([{obj_id: id}, {type: type}]).then(qr => {
+        QRs.findOne({_admin: req.user._id, obj_id: id, type: type}).then(qr => {
             if (qr) {
                 res.write(qr.img);
                 res.end();
@@ -29,12 +29,12 @@ module.exports.getQRByID = function (req, res) {
     if (id.length != 12 && id.length != 24) {
         return res.sendStatus(400)
     } else {
-        QRs.findOne({_admin: req.admin._id}).where('_id').in(id).then(qr => {
+        QRs.findOne({_admin: req.user._id, _id: id}).then(qr => {
             if (qr) {
                 res.write(qr.img);
                 res.end();
             } else {
-                res.status(404).send();
+                res.sendStatus(404);
             }
         })
     }
@@ -46,7 +46,8 @@ module.exports.postNewQrCode = function (req, res) {
     }
     const id = req.body.obj_id;
     const type = req.body.type;
-    createQRCodeAndSaveToDB(id, type, req.admin._id).then( code => {
+
+    createQRCodeAndSaveToDB(id, type, req.user._id).then(code => {
         switch (code) {
             case 200:
                 return res.sendStatus(200);

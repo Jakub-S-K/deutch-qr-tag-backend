@@ -7,7 +7,7 @@ module.exports.postTeam = function (req, res) {
     const newTeam = {};
 
     newTeam.name = req.body.name;
-    newTeam._admin = req.admin._id;
+    newTeam._admin = req.user._id;
 
     if(req.body.members) {
         if (Array.isArray(req.body.members)) {
@@ -15,7 +15,7 @@ module.exports.postTeam = function (req, res) {
         }
     }
 
-    Teams.findOne({ name: req.body.name, _admin: req.admin._id }).then(team => {
+    Teams.findOne({ name: req.body.name, _admin: req.user._id }).then(team => {
         if (!team) {
             new Teams({
                 ...newTeam
@@ -52,7 +52,7 @@ module.exports.patchTeam = async function (req, res) {
     if (Object.keys(team).length === 0) {
         return res.sendStatus(400);
     }
-    Teams.updateOne({_id: id, _admin: req.admin._id}, team, function (err, result) {
+    Teams.updateOne({_id: id, _admin: req.user._id}, team, function (err, result) {
         if (err) {
             console.log(err);
             res.sendStatus(500);
@@ -72,9 +72,9 @@ module.exports.getTeam = function (req, res) {
     }
     const id = req.params.id;
 
-    Teams.findOne({_id: id, _admin: req.admin._id}, '-_id -__v').then(team => {
+    Teams.findOne({_id: id, _admin: req.user._id}, '-_id -__v -_admin').then(team => {
         if (team) {
-            team.populate({path: 'members', select: '-__v'}).then(populated => {
+            team.populate({path: 'members', select: '-__v -_admin'}).then(populated => {
                 return res.json(populated);
             })
         } else {
@@ -89,7 +89,7 @@ module.exports.deleteTeam = function (req, res) {
     }
     const id = req.params.id;
     
-    Teams.deleteOne({_id: id, _admin: req.admin._id}).then(result => {
+    Teams.deleteOne({_id: id, _admin: req.user._id}).then(result => {
         if (result.deletedCount == 0) {
             return res.sendStatus(404);
         } else {

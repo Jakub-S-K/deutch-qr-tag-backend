@@ -27,19 +27,19 @@ module.exports.postQuestion = function(req, res) {
         return res.sendStatus(400);
     }
 
-    Question.findOne().where('question').in(question).then(result => {
+    Question.findOne({question: question}).then(result => {
         if (result) {
             console.log(result);
             return res.sendStatus(409);
         } else {
             new Question({
-                _admin: req.admin._id,
+                _admin: req.user._id,
                 question: question,
                 answers: answers,
                 answer: answer
             }).save((err, doc) => {
                 if (!err) {
-                    Qr.createQR(doc._id.toHexString(), 'question', req.admin._id).then(status => {
+                    Qr.createQR(doc._id.toHexString(), 'question', req.user._id).then(status => {
                         switch(status) {
                             case 200:
                                 res.json({_id: doc._id});
@@ -88,7 +88,7 @@ module.exports.getQuestion = function (req, res) {
         return res.sendStatus(400);
     }
     
-    Question.findOne().and({_id: id}, {_admin: req.admin._id}).select('-__v -_id').then(question => {
+    Question.findOne().and({_id: id}, {_admin: req.user._id}).select('-__v -_id -_admin').then(question => {
         if (question) {
             return res.json(question);
         } else {

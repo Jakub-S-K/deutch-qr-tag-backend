@@ -4,10 +4,10 @@ const Qr = require('./qr.js');
 
 module.exports.post = function (req, res) {
     if (req.body.name && req.body.surname) {
-        let user = new Users({name: req.body.name, surname: req.body.surname, _admin: req.admin._id});
+        let user = new Users({name: req.body.name, surname: req.body.surname, _admin: req.user._id});
         user.save((err, doc) => {
             if (!err) {
-                Qr.createQR(doc._id.toHexString(), 'user', req.admin._id).then(code =>{
+                Qr.createQR(doc._id.toHexString(), 'user', req.user._id).then(code =>{
                     switch (code) {
                         case 200:
                             return res.json({_id: doc._id});
@@ -35,7 +35,7 @@ module.exports.get = function (req, res) {
     if (id.length != 12 && id.length != 24) {
         return res.sendStatus(400)
     }
-    Users.findOne({_id: id, _admin: req.admin._id}).then(user => {
+    Users.findOne({_id: id, _admin: req.user._id}, {name: 1, surname: 1}).then(user => {
         if (user) {
             res.json(user)
         } else {
@@ -50,7 +50,7 @@ module.exports.delete = function(req, res) {
         res.sendStatus(400)
     }
     
-    Users.deleteOne({_id: id, _admin: req.admin._id}).then(result => {
+    Users.deleteOne({_id: id, _admin: req.user._id}).then(result => {
         if (result.deletedCount != 0) {
             Qr.deleteQRbyForeignID(id, 'user').then(code => {
                 switch(code) {
@@ -78,7 +78,7 @@ module.exports.patch = function(req, res) {
     
     delete req.body._admin;
 
-    Users.findOneAndUpdate({_id: id, _admin: req.admin._id}, req.body, function (err, data) {
+    Users.findOneAndUpdate({_id: id, _admin: req.user._id}, req.body, function (err, data) {
         if (err) {
             console.log(err);
             res.sendStatus(500);

@@ -18,7 +18,7 @@ jwtOptions.secretOrKey = process.env.JWT_SECRET;
 module.exports.strategy = new JwtStrategy(jwtOptions, function (jwt_payload, next) {
     Admins.findOne().where('_id').in(jwt_payload.id).then(admin => {
         if (admin) {
-            next(null, admin);
+            next(null, {_id: admin._id});
         } else {
             next(null, false);
         }
@@ -67,7 +67,7 @@ module.exports.post_login = function (req, res) {
 
 module.exports.get_renew = function(req, res) {
     var payload = {
-        id: req.admin._id,
+        id: req.user._id,
         exp: Math.floor(Date.now() / 1000) + (60 * 10)
     };
 

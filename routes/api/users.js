@@ -17,7 +17,7 @@ module.exports.getFree = function (req, res) {
     Teams.aggregate([
         {
           '$match': {
-            '_admin': req.admin._id
+            '_admin': req.user._id
           }
         },
         {
@@ -45,7 +45,7 @@ module.exports.getFree = function (req, res) {
                 'let': {},
                 'pipeline': [
                     {
-                        '$match': {_admin: req.admin._id}
+                        '$match': {_admin: req.user._id}
                     }
                 ],
                 'as': 'users'
@@ -75,6 +75,12 @@ module.exports.getFree = function (req, res) {
                 'from': 'users',
                 'localField': 'empty',
                 'foreignField': '_id',
+                'pipeline': [
+                    {'$project': {
+                        'name': 1,
+                        'surname': 1
+                    }}
+                ],
                 'as': 'users'
             }
         }, {

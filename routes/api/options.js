@@ -1,7 +1,7 @@
 const Options = require('../../schemas/schemas.js').options;
 
 module.exports.getOptions = function (req, res) {
-    Options.findOne({_admin: req.admin._id}).then(result => {
+    Options.findOne({_admin: req.user._id}).then(result => {
         if (!result) {
             return res.sendStatus(404);
         }
@@ -28,7 +28,7 @@ module.exports.patchOptions = async function (req, res) {
         obj.push({name: key, value: value});
     });
 
-    const result = await Options.updateOne({_admin: req.admin._id}, {options: obj}, { upsert: true });
+    const result = await Options.updateOne({_admin: req.user._id}, {options: obj}, { upsert: true });
 
     if (result.matchedCount > 0) {
         return res.sendStatus(200);
