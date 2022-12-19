@@ -33,12 +33,13 @@ module.exports.postQuestion = function(req, res) {
             return res.sendStatus(409);
         } else {
             new Question({
+                _admin: req.admin._id,
                 question: question,
                 answers: answers,
                 answer: answer
             }).save((err, doc) => {
                 if (!err) {
-                    Qr.createQR(doc._id.toHexString(), 'question').then(status => {
+                    Qr.createQR(doc._id.toHexString(), 'question', req.admin._id).then(status => {
                         switch(status) {
                             case 200:
                                 res.json({_id: doc._id});
@@ -65,6 +66,8 @@ module.exports.patchQuestion = function (req, res) {
         return res.sendStatus(400);
     }
 
+    delete req.body._admin;
+
     Question.findByIdAndUpdate(id, req.body, function (err, data) {
         if (err) {
             console.log(err);
@@ -85,7 +88,7 @@ module.exports.getQuestion = function (req, res) {
         return res.sendStatus(400);
     }
     
-    Question.findOne().where('_id').in(id).select('-__v -_id').then(question => {
+    Question.findOne().and({_id: id}, {_admin: req.admin._id}).select('-__v -_id').then(question => {
         if (question) {
             return res.json(question);
         } else {
@@ -100,7 +103,7 @@ module.exports.deleteQuestion = async function (req, res) {
         return res.sendStatus(400);
     }
 
-    Question.deleteOne().where('_id').in(id).then(result => {
+    Question.deleteOne({_id: id}).then(result => {
         if (result.deletedCount != 0) {
             Qr.deleteQRbyForeignID(id, 'question').then(code => {
                 switch(code) {

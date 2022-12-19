@@ -10,14 +10,14 @@ module.exports.getQRByObjectIdAndType = function (req, res) {
     const type = req.params.type;
 
     if ((id.length != 12 && id.length != 24) || !type) {
-        return res.status(400).json({msg: "Invalid parameters"})
+        return res.sendStatus(400);
     } else {
-        QRs.findOne().and([{obj_id: id}, {type: type}]).then(qr => {
+        QRs.findOne({_admin: req.admin._id}).and([{obj_id: id}, {type: type}]).then(qr => {
             if (qr) {
                 res.write(qr.img);
                 res.end();
             } else {
-                res.status(404).send();
+                res.sendStatus(404);
             }
         })
     }
@@ -27,9 +27,9 @@ module.exports.getQRByID = function (req, res) {
     const id = req.params.id;
 
     if (id.length != 12 && id.length != 24) {
-        return res.status(400).json({msg: "Invalid parameters"})
+        return res.sendStatus(400)
     } else {
-        QRs.findOne().where('_id').in(id).then(qr => {
+        QRs.findOne({_admin: req.admin._id}).where('_id').in(id).then(qr => {
             if (qr) {
                 res.write(qr.img);
                 res.end();
@@ -46,7 +46,7 @@ module.exports.postNewQrCode = function (req, res) {
     }
     const id = req.body.obj_id;
     const type = req.body.type;
-    createQRCodeAndSaveToDB(id, type).then( code => {
+    createQRCodeAndSaveToDB(id, type, req.admin._id).then( code => {
         switch (code) {
             case 200:
                 return res.sendStatus(200);
@@ -60,10 +60,10 @@ module.exports.postNewQrCode = function (req, res) {
     });
 }
 
-function createQRCodeAndSaveToDB(obj_id, type) {
+function createQRCodeAndSaveToDB(obj_id, type, admin_id) {
     const id = obj_id;
     return new Promise(resolve => {
-        QRs.findOne().and([{obj_id: id}, {type: type}])
+        QRs.findOne({_admin: admin_id}).and([{obj_id: id}, {type: type}])
         .then(qr => {
             if (qr) {
                 resolve(409);
@@ -71,6 +71,7 @@ function createQRCodeAndSaveToDB(obj_id, type) {
                 const _id = mongoose.Types.ObjectId();
                 let qr = new QRs({
                     _id: _id,
+                    _admin: admin_id,
                     obj_id: mongoose.Types.ObjectId.createFromHexString(id),
                     type: type,
                     img: QR_gen.imageSync(_id.toString())

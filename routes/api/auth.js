@@ -16,9 +16,9 @@ jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();;
 jwtOptions.secretOrKey = process.env.JWT_SECRET;
 
 module.exports.strategy = new JwtStrategy(jwtOptions, function (jwt_payload, next) {
-    Admins.findOne().where('_id').in(jwt_payload.id).then(user => {
-        if (user) {
-            next(null, user);
+    Admins.findOne().where('_id').in(jwt_payload.id).then(admin => {
+        if (admin) {
+            next(null, admin);
         } else {
             next(null, false);
         }
@@ -67,12 +67,12 @@ module.exports.post_login = function (req, res) {
 
 module.exports.get_renew = function(req, res) {
     var payload = {
-        id: req.user._id,
+        id: req.admin._id,
         exp: Math.floor(Date.now() / 1000) + (60 * 10)
     };
 
     var token = jwt.sign(payload, jwtOptions.secretOrKey);
-    res.json({ token: token});
+    res.json({ token: token });
 }
 
 module.exports.get_access_test = function (req, res) {
