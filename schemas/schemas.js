@@ -11,7 +11,7 @@ const QR = mongoose.model('qrs', mongoose.Schema({
         default: 'question'
     },
     _admin: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Types.ObjectId,
         require: true,
         ref: 'admins'
     },
@@ -21,7 +21,7 @@ const QR = mongoose.model('qrs', mongoose.Schema({
 
 const Users = mongoose.model('users', mongoose.Schema({
     _admin: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Types.ObjectId,
         require: true,
         ref: 'admins'
     },
@@ -31,7 +31,7 @@ const Users = mongoose.model('users', mongoose.Schema({
 
 const Questions = mongoose.model('questions', mongoose.Schema({
     _admin: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Types.ObjectId,
         require: true,
         ref: 'admins'
     },
@@ -43,7 +43,7 @@ const Questions = mongoose.model('questions', mongoose.Schema({
 
 const Answers = mongoose.model('answers', mongoose.Schema({
     _admin: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Types.ObjectId,
         require: true,
         ref: 'admins'
     },
@@ -53,14 +53,18 @@ const Answers = mongoose.model('answers', mongoose.Schema({
 }));
 
 const Teams = mongoose.model('teams', mongoose.Schema({
-    _admin: mongoose.mongo.Types.ObjectId,
+    _admin: {
+        type: mongoose.Types.ObjectId,
+        require: true,
+        ref: 'admins'
+    },
     name: String,
     members: [{ type: mongoose.Schema.ObjectId, required: true, ref: 'users' }]
 }))
 
 const Options = mongoose.model('options', mongoose.Schema({
     _admin: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Types.ObjectId,
         require: true,
         ref: 'admins'
     },
