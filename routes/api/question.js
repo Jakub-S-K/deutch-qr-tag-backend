@@ -4,7 +4,6 @@ const Qr = require('./qr.js');
 module.exports.postQuestion = function(req, res) {
 
     let question = req.body.question;
-    let answers = req.body.answers;
     let answer = req.body.answer;
     
     if (!question || answer === null || answer === undefined) {
@@ -15,12 +14,13 @@ module.exports.postQuestion = function(req, res) {
         console.log('fumu');
         return res.sendStatus(400);
     }
+
+    const answers = []
     
-    const isNull = answers.every(answer => {
-        if (answer === null) {
-            return false
+    req.body.answers.forEach(answer => {
+        if (answer !== null) {
+            newAnswers.push(answer);
         }
-        return true;
     })
 
     if (isNull) {
