@@ -1,54 +1,47 @@
-const {Router} = require('express');
 const express = require('express');
 const mongoose = require('mongoose');
-const short_id = require('shortid')
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+var bodyParser = require("body-parser");
 
-mongoose.SchemaTypes.Buffer
 require('dotenv').config();
 
+const db = require('./mongoConn.js').db;
+
+const limiter = rateLimit.rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    max: 1000, // Limit each IP to 1000 requests per `window` (here, per 10 minutes)
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+})
+
 const app = express()
+
+const httpServer = createServer(app);
+const io = new Server(httpServer, {path: '/socket'});
+
 const router = express.Router();
-const username = encodeURIComponent(process.env.DB_USR_LOGIN);
-const password = encodeURIComponent(process.env.DB_USR_PASS);
-const cluster = process.env.DB_CLUSTER;
-const database = process.env.DB_NAME;
 
-var GlobalStatus = true
+app.use(limiter);
+app.set('trust proxy', 1);
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}))
+app.use(cors());
 
-let uri = `mongodb+srv://${username}:${password}@${cluster}/${database}`;
+if (process.env.LE_URL && process.env.LE_CONTENT) {
+    app.get(process.env.LE_URL, function (req, res) {
+        return res.send(process.env.LE_CONTENT)
+    });
+}
 
-mongoose.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
+require('./routes/routers.js')(app);
+require('./routes/old_routes.js')(app);
+require('./routes/socket.js')(app, io);
+
+app.use('/', router);
+
+const Schemas = require('./schemas/schemas.js');
 
 
-const securePassword = require('secure-password')
-
-// Initialise our password policy
-const pwd = securePassword();
-
-const userPassword = Buffer.from('cQkZoZ4s');
-
-(async () => {
-    const hash = await pwd.hash(userPassword)
-    
-    console.log(hash);
-
-    
-
-const Admins = mongoose.model('admins', mongoose.Schema({login: String, password: Buffer}));
-
-let admin = new Admins({login: 'admin', password: hash});
-
-admin.save((err, doc) => {
-    if (!err) {
-        console.log("HOHOHO poszlo w eterrer");
-    } else {
-        console.log("no i dupa");
-        console.log(err);
-    }
-});
-
-})();
