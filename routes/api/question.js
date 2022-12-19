@@ -1,32 +1,27 @@
 const Question = require('../../schemas/schemas.js').questions;
-const { answers } = require('../../schemas/schemas.js');
 const Qr = require('./qr.js');
 
 module.exports.postQuestion = function(req, res) {
 
-    let question = req.body.question;
-    let answer = req.body.answer;
+    const question = req.body.question;
+    const answer = req.body.answer;
+    const answers = req.body.answers;
     
     if (!question || answer === null || answer === undefined) {
         return res.sendStatus(400);
     }
 
-    if (!Array.isArray(answers)) {
-        console.log('fumu');
+    if (!Array.isArray(req.body.answers)) {
         return res.sendStatus(400);
     }
 
-    const answers = [];
+    const answersWithoutNull = [];
 
-    req.body.answers.forEach(answer => {
+    req.body.answer.forEach(answer => {
         if (answer !== null) {
-            answers.push(answer);
+            answersWithoutNull.push(answer);
         }
     })
-
-    if (isNull) {
-        return res.sendStatus(400);
-    }
 
     Question.findOne({question: question}).then(result => {
         if (result) {
@@ -37,7 +32,7 @@ module.exports.postQuestion = function(req, res) {
                 _admin: req.user._id,
                 question: question,
                 answers: answers,
-                answer: answer
+                answer: answersWithoutNull
             }).save((err, doc) => {
                 if (!err) {
                     Qr.createQR(doc._id.toHexString(), 'question', req.user._id).then(status => {
