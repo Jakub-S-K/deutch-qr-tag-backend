@@ -1,4 +1,5 @@
 const Question = require('../../schemas/schemas.js').questions;
+const { answers } = require('../../schemas/schemas.js');
 const Qr = require('./qr.js');
 
 module.exports.postQuestion = function(req, res) {
@@ -15,11 +16,11 @@ module.exports.postQuestion = function(req, res) {
         return res.sendStatus(400);
     }
 
-    const answers = []
-    
+    const answers = [];
+
     req.body.answers.forEach(answer => {
         if (answer !== null) {
-            newAnswers.push(answer);
+            answers.push(answer);
         }
     })
 
