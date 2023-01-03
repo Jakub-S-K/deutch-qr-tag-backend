@@ -8,6 +8,7 @@ const questions = require('./api/questions.js');
 const options = require('./api/options.js');
 const team = require('./api/team.js');
 const teams = require('./api/teams.js');
+const dashboard = require('./api/dashboard.js');
 
 var passport = require('passport');
 
@@ -49,6 +50,7 @@ module.exports = function (app) {
     
     router.get('/teams', passport.authenticate('jwt', {session: false}), teams.getTeams);
 
+    router.get('/dashboard', passport.authenticate('jwt', {session: false}), dashboard.getDashboard);
     //There are some /api routes in socket.js
     
     app.use('/api', router);
