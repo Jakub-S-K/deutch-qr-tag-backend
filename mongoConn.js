@@ -13,6 +13,8 @@ let db = mongoose.connect(uri, {
     useUnifiedTopology: true
 });
 
+mongoose.Promise = global.Promise;
+
 module.exports.db = db;
 
 module.exports.db_rdy = function () {
