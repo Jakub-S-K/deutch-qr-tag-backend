@@ -4,7 +4,6 @@ module.exports.getLiveUsers = async function (req, res) {
     let result = await Teams.find({_admin: req.user._id}).select('_id').lean();
     for (let i = 0; i < result.length; ++i) {
         result[i].count = Date.now() % 1 + Math.floor(Math.random() * 10);
-        console.log(result[i]);
     }
 
     res.json(result);
