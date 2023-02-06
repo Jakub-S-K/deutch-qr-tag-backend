@@ -61,6 +61,7 @@ module.exports = function (app) {
     router.get('/teams', passport.authenticate('jwt', {session: false}), teams.getTeams);
 
     router.get('/leaderboard', passport.authenticate('jwt', {session: false}), dashboard.getDashboard);
+    router.get('/leaderboard/users/live', passport.authenticate('jwt', {session: false}), dashboard.getLiveUsers);
 
 
     const mobile = express.Router();
