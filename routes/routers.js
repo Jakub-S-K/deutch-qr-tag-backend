@@ -10,6 +10,8 @@ const team = require('./api/team.js');
 const teams = require('./api/teams.js');
 const dashboard = require('./api/dashboard.js');
 
+const validate = require('./api/mobile/validate_user.js');
+
 var passport = require('passport');
 
 module.exports = function (app) {
@@ -51,6 +53,15 @@ module.exports = function (app) {
     router.get('/teams', passport.authenticate('jwt', {session: false}), teams.getTeams);
 
     router.get('/leaderboard', passport.authenticate('jwt', {session: false}), dashboard.getDashboard);
+
+
+    const mobile = express.Router();
+
+    mobile.post('/validate', validate.postValidate);
+
+
+    
+    router.use('/mobile', mobile);
     //There are some /api routes in socket.js
     
     app.use('/api', router);
