@@ -18,6 +18,7 @@ const dashboard = require('./api/dashboard.js');
 
 const validate = require('./api/mobile/validate_user.js');
 const mobile_question = require('./api/mobile/get_question.js');
+const mobile_post_answer = require('./api/mobile/post_answer.js');
 
 
 var passport = require('passport');
@@ -67,8 +68,9 @@ module.exports = function (app) {
     const mobile = express.Router();
 
     mobile.post('/validate', validate.postValidate);
+    mobile.post('/answer', mobile_post_answer.postAnswer);
 
-    mobile.get('/question/:admin_id/:id', mobile_question.getQuestion)
+    mobile.get('/question/:admin_id/:id', mobile_question.getQuestion);
 
     router.use('/mobile', mobile);
     //There are some /api routes in socket.js
