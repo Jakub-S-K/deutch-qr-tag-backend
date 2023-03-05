@@ -47,9 +47,18 @@ const Answers = mongoose.model('answers', mongoose.Schema({
         require: true,
         ref: 'admins'
     },
-    hash: String,
-    qr_id: String,
-    answer: String
+    user_id: {
+        type: mongoose.Types.ObjectId,
+        require: true,
+        ref: 'users'
+    },
+    qr_id: {
+        type: mongoose.Types.ObjectId,
+        require: true,
+        ref: 'qrs'
+    },
+    answer: [Number],
+    correct: Number
 }));
 
 const Teams = mongoose.model('teams', mongoose.Schema({
