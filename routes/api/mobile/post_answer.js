@@ -29,10 +29,12 @@ module.exports.postAnswer = async function (req, res) {
     let pvalidUser = Users.findOne({_id: user_id});
     let pvalidAdmin = Admins.findOne({_id: admin_id});
     let presult = Questions.findOne({_id: question_id});
-    let panswer = Answers.findOne({qr_id: question_id, user_id: user_id}).lean();
     let pteam = Teams.findOne({"members": user_id});
 
-    let [validAdmin, validUser, result, answer, team] = await Promise.all([pvalidAdmin, pvalidUser, presult, panswer, pteam]);
+    let [validAdmin, validUser, result, team] = await Promise.all([pvalidAdmin, pvalidUser, presult, pteam]);
+
+    let answer = await Answers.findOne({qr_id: question_id, team_id: team._id}).lean();
+
 
     if (!result || !validAdmin || !validUser || !team) {
         console.log('Not found qr/admin/user');
