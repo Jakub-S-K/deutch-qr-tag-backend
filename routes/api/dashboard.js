@@ -20,8 +20,8 @@ module.exports.getLiveUsers = async function (req, res) {
 }
 
 module.exports.getDashboard = async function (req, res) {
-
-    const result = await Answers.aggregate([
+    const p_usersOnline = localLiveUsers(req, res);
+    const p_result = Answers.aggregate([
         {
           '$group': {
             '_id': '$team_id', 
@@ -61,6 +61,32 @@ module.exports.getDashboard = async function (req, res) {
           }
         }
       ]).exec();
+    let [usersOnline, result] = await Promise.all([p_usersOnline, p_result]);
+
+    for (let i = 0; i < result.length; ++i) {
+        const index = usersOnline.findIndex((obj) => {return obj._id === result[i]._id.toString()});
+        if (index !== -1) {
+            result[i]['count'] = usersOnline[index].count;
+            result[i]['membersCount'] = usersOnline[index].membersCount;
+        }
+    }
 
     res.json(result);
+}
+
+async function localLiveUsers(req, res) {
+    let result = await Teams.find({_admin: req.user._id}).select('_id name').populate({ path: 'members', select: '_id' }).lean();
+
+    const connTeams = [];
+    for (let i = 0; i < result.length; ++i) {
+        let activeUsersInTeam = 0;
+        for (let j = 0; j < result[i]['members'].length; ++j) {
+            if (Date.now() - liveUsers[result[i]['members'][j]['_id']] <= 20000) {
+                activeUsersInTeam++;
+            }
+        }
+        connTeams.push({_id: result[i]['_id'].toString(), count: activeUsersInTeam, membersCount: result[i]['members'].length});
+    }
+
+    return connTeams;
 }
