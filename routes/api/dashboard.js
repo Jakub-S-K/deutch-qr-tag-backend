@@ -1,15 +1,6 @@
 const Teams = require('../../schemas/schemas.js').teams;
 const liveUsers = require('./mobile/heartbeat.js').users;
 
-// module.exports.getLiveUsers = async function (req, res) {
-//     let result = await Teams.find({_admin: req.user._id}).select('_id').lean();
-//     for (let i = 0; i < result.length; ++i) {
-//         result[i].count = Date.now() % 1 + Math.floor(Math.random() * 10);
-//     }
-
-//     res.json(result);
-// }
-
 module.exports.getLiveUsers = async function (req, res) {
     let result = await Teams.find({_admin: req.user._id}).select('_id name').populate({ path: 'members', select: '_id' }).lean();
 
@@ -17,11 +8,8 @@ module.exports.getLiveUsers = async function (req, res) {
     for (let i = 0; i < result.length; ++i) {
         let activeUsersInTeam = 0;
         for (let j = 0; j < result[i]['members'].length; ++j) {
-            // console.log(result[i]['members'][j]['_id'].toString());
-            // console.log(liveUsers[(result[i]['members'][j]['_id'].toString())]);
             if (Date.now() - liveUsers[result[i]['members'][j]['_id']] <= 20000) {
                 activeUsersInTeam++;
-                // console.log('active user');
             }
         }
         connTeams.push({_id: result[i]['_id'], count: activeUsersInTeam, membersCount: result[i]['members'].length});
