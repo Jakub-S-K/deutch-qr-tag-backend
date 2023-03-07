@@ -21,7 +21,7 @@ module.exports.getLiveUsers = async function (req, res) {
 
 module.exports.getDashboard = async function (req, res) {
 
-    const result = await Teams.aggregate([
+    const result = await Answers.aggregate([
         {
           '$group': {
             '_id': '$team_id', 
