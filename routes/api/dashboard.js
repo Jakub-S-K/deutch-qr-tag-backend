@@ -17,14 +17,14 @@ module.exports.getLiveUsers = async function (req, res) {
     for (let i = 0; i < result.length; ++i) {
         let activeUsersInTeam = 0;
         for (let j = 0; j < result[i]['members'].length; ++j) {
-            //console.log(result[i]['members'][j]['_id'].toString());
+            // console.log(result[i]['members'][j]['_id'].toString());
             // console.log(liveUsers[(result[i]['members'][j]['_id'].toString())]);
             if (Date.now() - liveUsers[result[i]['members'][j]['_id']] <= 20000) {
                 activeUsersInTeam++;
                 // console.log('active user');
             }
         }
-        connTeams.push({_id: result[i]['_id'], name: result[i]['name'], count: activeUsersInTeam, membersCnt: result[i]['members'].length});
+        connTeams.push({_id: result[i]['_id'], count: activeUsersInTeam, membersCount: result[i]['members'].length});
     }
 
     return res.json(connTeams);
