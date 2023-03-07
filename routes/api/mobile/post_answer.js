@@ -55,7 +55,7 @@ module.exports.postAnswer = async function (req, res) {
             answer: user_answer,
             correct: 0
         }).save();
-        console.log('wrong answer');
+        console.log('Wrong answer');
         return res.json({points: await curr_points});
     }
 
