@@ -19,6 +19,7 @@ const dashboard = require('./api/dashboard.js');
 const validate = require('./api/mobile/validate_user.js');
 const mobile_question = require('./api/mobile/get_question.js');
 const mobile_post_answer = require('./api/mobile/post_answer.js');
+const mobile_hearbeat = require('./api/mobile/heartbeat.js');
 
 
 var passport = require('passport');
@@ -69,6 +70,7 @@ module.exports = function (app) {
 
     mobile.post('/validate', validate.postValidate);
     mobile.post('/answer', mobile_post_answer.postAnswer);
+    mobile.post('/heartbeat', mobile_hearbeat.postheartbeat);
 
     mobile.get('/question/:admin_id/:id', mobile_question.getQuestion);
 
