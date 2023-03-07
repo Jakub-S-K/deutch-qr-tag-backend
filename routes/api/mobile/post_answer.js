@@ -2,10 +2,8 @@ const Questions = require('../../../schemas/schemas.js').questions;
 const Users = require('../../../schemas/schemas.js').users;
 const Admins = require('../../../schemas/schemas.js').admins;
 const Answers = require('../../../schemas/schemas.js').answers;
-const QR = require('../../../schemas/schemas.js').qr;
-const conn = require('../../../mongoConn').db;
+const Teams = require('../../../schemas/schemas.js').teams;
 const mongoose = require('mongoose');
-const { use } = require('passport');
 
 module.exports.postAnswer = async function (req, res) {
     if (! req.body.question_id || ! req.body.user_id || ! req.body.admin_id) {
@@ -31,11 +29,12 @@ module.exports.postAnswer = async function (req, res) {
     let pvalidUser = Users.findOne({_id: user_id});
     let pvalidAdmin = Admins.findOne({_id: admin_id});
     let presult = Questions.findOne({_id: question_id});
-    let panswer = Answers.findOne({qr_id: question_id, user_id: user_id});
+    let panswer = Answers.findOne({qr_id: question_id, user_id: user_id}).lean();
+    let pteam = Teams.findOne({"members": user_id});
 
-    let [validAdmin, validUser, result, answer] = await Promise.all([pvalidAdmin, pvalidUser, presult, panswer]);
+    let [validAdmin, validUser, result, answer, team] = await Promise.all([pvalidAdmin, pvalidUser, presult, panswer, pteam]);
 
-    if (!result || !validAdmin || !validUser) {
+    if (!result || !validAdmin || !validUser || !team) {
         console.log('Not found qr/admin/user');
         return res.sendStatus(404);
     }
@@ -45,23 +44,12 @@ module.exports.postAnswer = async function (req, res) {
         return res.sendStatus(403);
     }
 
-    let curr_points = current_points(user_id);
+    let curr_points = current_points(team._id);
 
-    if (result.answer.length !== user_answer.length) { // Wrong answer return points until now and save answer to db
-        await new Answers({
-            _admin: admin_id,
-            user_id: user_id,
-            qr_id: question_id,
-            answer: user_answer,
-            correct: 0
-        }).save();
-        console.log('Wrong answer');
-        return res.json({points: await curr_points});
-    }
 
     let counter = 0;
-    for (let i = 0; i < result.answer.length; ++ i) {
-        if (result.answer[i] === user_answer[i]) {
+    for (let i = 0; i < user_answer.length; ++ i) {
+        if (result.answer.includes(user_answer[i])) {
             counter++;
         }
     }
@@ -70,6 +58,7 @@ module.exports.postAnswer = async function (req, res) {
     await new Answers({
         _admin: admin_id,
         user_id: user_id,
+        team_id: team._id,
         qr_id: question_id,
         answer: user_answer,
         correct: counter
@@ -79,11 +68,11 @@ module.exports.postAnswer = async function (req, res) {
     });
 }
 
-async function current_points(user_id) {
+async function current_points(team_id) {
     const points = await Answers.aggregate([
         {
             "$match": {
-              "user_id": mongoose.Types.ObjectId(user_id)
+              "team_id": mongoose.Types.ObjectId(team_id)
             }
           },
           {
@@ -96,7 +85,5 @@ async function current_points(user_id) {
           }
     ]).exec();
 
-    console.log('points');
-    console.log(points);
     return points[0]?.points;
 }

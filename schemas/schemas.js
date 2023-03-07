@@ -52,6 +52,11 @@ const Answers = mongoose.model('answers', mongoose.Schema({
         require: true,
         ref: 'users'
     },
+    team_id: {
+        type: mongoose.Types.ObjectId,
+        require: true,
+        ref: 'users'
+    },
     qr_id: {
         type: mongoose.Types.ObjectId,
         require: true,
