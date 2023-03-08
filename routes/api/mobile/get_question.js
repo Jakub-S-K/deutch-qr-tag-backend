@@ -4,8 +4,6 @@ const conn = require('../../../mongoConn').db;
 
 module.exports.getQuestion = async function (req, res) {
     const id = req.params.id;
-    const admin_id = req.params.admin_id;
-
 
     const db_conn = await conn;
     let session = await db_conn.startSession();

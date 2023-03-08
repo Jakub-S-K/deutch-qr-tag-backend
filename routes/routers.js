@@ -72,7 +72,7 @@ module.exports = function (app) {
     mobile.post('/answer', mobile_post_answer.postAnswer);
     mobile.post('/heartbeat', mobile_hearbeat.postheartbeat);
 
-    mobile.get('/question/:admin_id/:id', mobile_question.getQuestion);
+    mobile.get('/question/:id', mobile_question.getQuestion);
 
     router.use('/mobile', mobile);
     //There are some /api routes in socket.js
