@@ -32,7 +32,7 @@ module.exports.postValidate = async function (req, res) {
         }
         
         const user = await Users.findOne({_admin: result._admin, _id: result.obj_id})
-                    .session(session).select('-_id -__v')
+                    .session(session).select('-__v')
         
         if (!user) {
             res.sendStatus(404);
