@@ -20,7 +20,7 @@ module.exports.getQuestion = async function (req, res) {
             throw 'Wrong QR type'
         }
         
-        const question = await Questions.findById(result.obj_id).session(session).select('-_id -__v -_admin');
+        const question = await Questions.findById(result.obj_id).session(session).select('-__v -_admin');
         
         if (!question) {
             res.sendStatus(404);
