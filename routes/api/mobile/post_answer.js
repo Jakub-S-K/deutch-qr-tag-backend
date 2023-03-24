@@ -43,6 +43,7 @@ module.exports.postAnswer = async function (req, res) {
 
     if (answer) {
         console.log('Already answered');
+        console.log(answer);
         return res.sendStatus(403);
     }
 
