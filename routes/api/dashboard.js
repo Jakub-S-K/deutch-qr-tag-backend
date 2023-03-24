@@ -62,7 +62,7 @@ module.exports.getDashboard = async function (req, res) {
         }
       ]).exec();
     let [usersOnline, result] = await Promise.all([p_usersOnline, p_result]);
-
+    console.log('result: ', result);
     for (let i = 0; i < result.length; ++i) {
         const index = usersOnline.findIndex((obj) => {return obj._id === result[i]._id.toString()});
         if (index !== -1) {
