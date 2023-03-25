@@ -12,9 +12,9 @@ module.exports.get = function (req, res) {
     });
 }
 
-module.exports.getFree = function (req, res) {
-
-    Teams.aggregate([
+module.exports.getFree = async function (req, res) {
+    let allUsers = Users.find({_admin: req.user._id}).select('-__v -_admin').lean();
+    let teams = Teams.aggregate([
         {
           '$match': {
             '_admin': req.user._id
@@ -89,11 +89,15 @@ module.exports.getFree = function (req, res) {
                 '_id': 0
             }
         }
-    ]).then(teams => {
-        if (teams) {
-            return res.json(teams[0].users);
-        } else {
-            return res.sendStatus(404)
-        }
-    })
+    ]).exec();
+
+
+    [allUsers, teams] = await Promise.all([allUsers, teams]);
+    
+    if (teams.length === 0) {
+        return res.json(allUsers);
+    }
+
+    return res.json(teams[0].users);
+
 }
