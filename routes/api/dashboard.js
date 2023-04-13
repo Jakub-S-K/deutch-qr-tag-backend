@@ -15,7 +15,6 @@ module.exports.getLiveUsers = async function (req, res) {
         }
         connTeams.push({_id: result[i]['_id'], count: activeUsersInTeam, membersCount: result[i]['members'].length});
     }
-
     return res.json(connTeams);
 }
 
@@ -61,8 +60,7 @@ module.exports.getDashboard = async function (req, res) {
           }
         }
       ]).exec();
-    let [usersOnline, result] = await Promise.all([p_usersOnline, p_result]);
-    console.log('result: ', result);
+    let [[usersOnline, allTeams], result] = await Promise.all([p_usersOnline, p_result]);
     for (let i = 0; i < result.length; ++i) {
         const index = usersOnline.findIndex((obj) => {return obj._id === result[i]._id.toString()});
         if (index !== -1) {
@@ -71,6 +69,19 @@ module.exports.getDashboard = async function (req, res) {
         }
     }
 
+    for (let i = 0; i < usersOnline.length; i++) {
+      const index = result.findIndex((obj) => {
+        return obj._id.toString() === allTeams[i]._id.toString()
+      });
+
+      if (index === -1) {
+          allTeams[i].membersCount = allTeams[i].members.length;
+          allTeams[i].count = 0;
+          allTeams[i].points = 0;
+          delete allTeams[i].members
+          result.push(allTeams[i]);
+        }
+    }
     res.json(result);
 }
 
@@ -87,6 +98,5 @@ async function localLiveUsers(req, res) {
         }
         connTeams.push({_id: result[i]['_id'].toString(), count: activeUsersInTeam, membersCount: result[i]['members'].length});
     }
-
-    return connTeams;
+    return [connTeams, result];
 }
