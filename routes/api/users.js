@@ -1,4 +1,4 @@
-require('mongoose');
+const mongoose = require('mongoose');
 const Users = require('../../schemas/schemas.js').users;
 const Teams = require('../../schemas/schemas.js').teams;
 
@@ -17,7 +17,7 @@ module.exports.getFree = function (req, res) {
     Teams.aggregate([
         {
           '$match': {
-            '_admin': req.user._id
+            '_admin': mongoose.Types.ObjectId(req.user._id)
           }
         },
         {
