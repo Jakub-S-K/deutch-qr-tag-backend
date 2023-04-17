@@ -78,7 +78,9 @@ module.exports.getDashboard = async function (req, res) {
           allTeams[i].membersCount = allTeams[i].members.length;
           allTeams[i].count = 0;
           allTeams[i].points = 0;
-          delete allTeams[i].members
+          delete allTeams[i].members;
+          allTeams[i].team = allTeams[i].name;
+          delete allTeams[i].name;
           result.push(allTeams[i]);
         }
     }
