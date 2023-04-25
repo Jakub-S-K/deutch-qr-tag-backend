@@ -67,7 +67,8 @@ module.exports.postAnswer = async function (req, res) {
         correct: counter
     }).save();
     return res.json({
-        points: curr_points + counter
+        points: curr_points + counter,
+        accepted: counter
     });
 }
 
