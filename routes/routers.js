@@ -20,7 +20,7 @@ const validate = require('./api/mobile/validate_user.js');
 const mobile_question = require('./api/mobile/get_question.js');
 const mobile_post_answer = require('./api/mobile/post_answer.js');
 const mobile_hearbeat = require('./api/mobile/heartbeat.js');
-
+const mobile_competition = require('./api/mobile/get_comp_name.js');
 
 var passport = require('passport');
 
@@ -73,6 +73,7 @@ module.exports = function (app) {
     mobile.post('/heartbeat', mobile_hearbeat.postheartbeat);
 
     mobile.get('/question/:id', mobile_question.getQuestion);
+    mobile.get('/competition/:id', mobile_competition.getCompetitionName);
 
     router.use('/mobile', mobile);
     //There are some /api routes in socket.js
