@@ -55,9 +55,13 @@ module.exports.postAnswer = async function (req, res) {
         }
     }
     
-    let current_answers = await Answers.find({_admin: result.admin_id, team_id: pteam._id});
+    let current_answers = await Answers.find({_admin: admin_id, team_id: pteam._id});
 
-    current_answers = current_answers ? current_answers.length : 0;
+    if (!current_answers) {
+        current_answers = 0
+    } else {
+        current_answers = current_answers.length;
+    }
 
     curr_points = (await curr_points) || 0;
 
