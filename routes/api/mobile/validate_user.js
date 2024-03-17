@@ -1,10 +1,14 @@
 const Users = require('../../../schemas/schemas.js').users;
 const Admins = require('../../../schemas/schemas.js').admins;
+const Questions = require('../../../schemas/schemas.js').questions;
+const Teams = require('../../../schemas/schemas.js').teams;
 const QR = require('../../../schemas/schemas.js').qr;
 const conn = require('../../../mongoConn').db;
+const count_points = require(`./post_answer.js`).count_points;
 
 module.exports.postValidate = async function (req, res) {
     if (!req.body.qr_id) {
+        console.log(req.body)
         return res.sendStatus(400);
     }
     
@@ -32,19 +36,32 @@ module.exports.postValidate = async function (req, res) {
         }
         
         const user = await Users.findOne({_admin: result._admin, _id: result.obj_id})
-                    .session(session).select('-__v')
+        .session(session).select('-__v').lean();
         
         if (!user) {
             res.sendStatus(404);
-            throw 'Not found user'
+            throw `User not found`
         }
+
+        const team_id_ = await Teams.findOne({_admin: result._admin, members: user._id})
+        if (!team_id_) {
+            res.sendStatus(404);
+            thwow `Team not found`
+        }
+        const current_points = await count_points(team_id_._id);
+
+        const question_number = await Questions.find({_admin: result._admin}).session(session);
+
+        user["question_number"] = question_number ? question_number.length : 0;
+        user["points"] = current_points;
+        // console.log(user);
         res.json(user);
 
         await session.commitTransaction();
     } catch (e) {
-        session.abortTransaction();
         console.error(e);
     } finally {
         session.endSession();
     }
 }
+
