@@ -1,6 +1,7 @@
 const Users = require('../../../schemas/schemas.js').users;
 const Admins = require('../../../schemas/schemas.js').admins;
 const Questions = require('../../../schemas/schemas.js').questions;
+const Answers = require('../../../schemas/schemas.js').answers;
 const Teams = require('../../../schemas/schemas.js').teams;
 const QR = require('../../../schemas/schemas.js').qr;
 const conn = require('../../../mongoConn').db;
@@ -48,12 +49,12 @@ module.exports.postValidate = async function (req, res) {
             res.sendStatus(404);
             thwow `Team not found`
         }
-        const current_points = await count_points(team_id_._id);
+        const current_points = await Answers.find({_admin: result._admin, team_id: team_id_._id});
 
         const question_number = await Questions.find({_admin: result._admin}).session(session);
 
         user["question_number"] = question_number ? question_number.length : 0;
-        user["points"] = current_points;
+        user["points"] = current_points ? current_points.length : 0;
         // console.log(user);
         res.json(user);
 
