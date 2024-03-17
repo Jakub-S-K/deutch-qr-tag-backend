@@ -54,6 +54,11 @@ module.exports.postAnswer = async function (req, res) {
             counter++;
         }
     }
+    
+    let current_answers = await Answers.find({_admin: result.admin_id, team_id: pteam._id});
+
+    current_answers = current_answers ? current_answers.length : 0;
+
     curr_points = (await curr_points) || 0;
 
     await new Answers({
@@ -66,7 +71,7 @@ module.exports.postAnswer = async function (req, res) {
     }).save();
 
     return res.json({
-        points: curr_points + counter,
+        points: current_answers,
         accepted: counter
     });
 }
