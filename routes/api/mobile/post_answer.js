@@ -35,7 +35,6 @@ module.exports.postAnswer = async function (req, res) {
 
     let answer = await Answers.findOne({qr_id: question_id, team_id: team._id}).lean();
 
-
     if (!result || !validAdmin || !validUser || !team) {
         console.log('Not found qr/admin/user');
         return res.sendStatus(404);
@@ -48,7 +47,6 @@ module.exports.postAnswer = async function (req, res) {
     }
 
     let curr_points = current_points(team._id);
-
 
     let counter = 0;
     for (let i = 0; i < user_answer.length; ++ i) {
@@ -66,11 +64,14 @@ module.exports.postAnswer = async function (req, res) {
         answer: user_answer,
         correct: counter
     }).save();
+
     return res.json({
         points: curr_points + counter,
         accepted: counter
     });
 }
+
+module.exports.count_points = current_points;
 
 async function current_points(team_id) {
     const points = await Answers.aggregate([
