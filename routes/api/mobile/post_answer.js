@@ -29,7 +29,7 @@ module.exports.postAnswer = async function (req, res) {
     let pvalidUser = Users.findOne({_id: user_id});
     let pvalidAdmin = Admins.findOne({_id: admin_id});
     let presult = Questions.findOne({_id: question_id});
-    let pteam = Teams.findOne({"members": user_id});
+    let pteam = Teams.findOne({"members": mongoose.Types.ObjectId(user_id)});
 
     let [validAdmin, validUser, result, team] = await Promise.all([pvalidAdmin, pvalidUser, presult, pteam]);
 
