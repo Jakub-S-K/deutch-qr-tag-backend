@@ -29,7 +29,7 @@ module.exports.postAnswer = async function (req, res) {
     let pvalidUser = Users.findOne({_id: user_id});
     let pvalidAdmin = Admins.findOne({_id: admin_id});
     let presult = Questions.findOne({_id: question_id});
-    let pteam = Teams.findOne({"members": mongoose.Types.ObjectId(user_id)});
+    let pteam = Teams.findOne({"members": user_id});
 
     let [validAdmin, validUser, result, team] = await Promise.all([pvalidAdmin, pvalidUser, presult, pteam]);
 
@@ -55,14 +55,14 @@ module.exports.postAnswer = async function (req, res) {
         }
     }
     
-    let current_answers = await Answers.find({_admin: admin_id, team_id: team._id});
+    let current_answers = await Answers.find({team_id: team._id});
 
     console.log("\ncurr_answ:" + current_answers + "\nadmin " + admin_id + "\nteam: " + team);
 
     if (!current_answers) {
-        current_answers = 0
+        current_answers = 1
     } else {
-        current_answers = current_answers.length;
+        current_answers = current_answers.length + 1;
     }
 
     curr_points = (await curr_points) || 0;
