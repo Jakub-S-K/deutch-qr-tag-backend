@@ -55,7 +55,7 @@ module.exports.postAnswer = async function (req, res) {
         }
     }
     
-    let current_answers = await Answers.find({_admin: admin_id, team_id: pteam._id});
+    let current_answers = await Answers.find({_admin: admin_id, team_id: mongoose.Types.ObjectId(pteam._id)});
 
     if (!current_answers) {
         current_answers = 0
